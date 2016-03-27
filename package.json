@@ -1,0 +1,15 @@
+{
+    "name": "sketch-context2d",
+    "version": "0.0.1",
+    "private" : true,
+    "author": {
+        "name": "Henryk Wollik",
+        "email": "hwollik@hotmail.com",
+        "url": "http://henrykwollik.com"
+    },
+    "main": "index.js",
+    "dependencies": {
+        "minimist" : "^1.2.0",
+    },
+    "license": "MIT"
+}

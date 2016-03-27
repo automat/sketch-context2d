@@ -1,0 +1,103 @@
+@import '__dirname__/scripts/ContextJS.cocoascript'
+@import '__dirname__/scripts/Context2dBindings+Wrap.cocoascript'
+
+var SCRIPT_NAME = '__scriptName__';
+
+var document = context.document;
+var page     = document.currentPage();
+var artboard = page.currentArtboard();
+
+/* CHECK RENDER TARGET SET */
+
+if(!artboard){
+    throw new Error('No artboard selected.');
+}
+
+/* SCRIPT RENDER TARGET GROUP */
+var group;
+
+if(__recreate__){
+    group = MSLayerGroup.new();
+    artboard.addLayers([group]);
+} else {
+    var contextGroups = [];
+
+    function find(element){
+        var class_ = element.class();
+        if(class_ != MSArtboardGroup && class_ != MSLayerGroup){
+            return;
+        }
+        var name = element.name();
+        if(name.indexOf(SCRIPT_NAME) != -1){
+            if(name.indexOf('keep') == -1){
+                contextGroups.push(element);
+            }
+        }
+
+        var layers = element.layers();
+        var length = layers.count();
+        for(var i = 0; i < length; ++i){
+            find(layers.objectAtIndex(i));
+        }
+    }
+
+    find(artboard);
+
+    if(contextGroups.length == 0){
+        group = MSLayerGroup.new();
+        artboard.addLayers([group]);
+
+    } else {
+        contextGroups.sort(function(a,b){
+            var tokensA = a.name().split('_');
+            var tokensB = b.name().split('_');
+            var timestampA = tokensA[tokensA.length - 1];
+            var timestampB = tokensB[tokensB.length - 1];
+
+            return timestampA > timestampB ? -1 : 1;
+        });
+
+        group = contextGroups[0];
+    }
+}
+
+group.setName_(SCRIPT_NAME + '_' + new Date().getTime());
+
+
+/* INJECTED GLOBALS JS CONTEXT */
+
+var globals = {
+    console: {
+        log : function(args){
+            var msg = '';
+            for(var i = 0; i < args.count(); ++i){
+                msg += args[i] + ', ';
+            }
+            print(!msg.length ? ' ' : msg.substr(0,msg.length-2));
+        }
+    },
+    __result : {
+        handleError : function(args){
+            print('Error: ' + args[0] + ' @:');
+            var stack = args[1].split('\n');
+            for(var i = 0; i < stack.length; ++i){
+                print('    ' + stack[i]);
+            }
+        }
+    },
+    __artboardWidth  : +artboard.bounds().size.width,
+    __artboardHeight : +artboard.bounds().size.height,
+    __bindings :       Context2DBindings(group)
+};
+
+/* SCRIPT */
+
+function onError(e){
+    __result.handleError(e.message,e.stack)
+}
+
+var script = 'try{('  + __scriptContent__ + ')((' + Context2DWrap + ')())}catch(e){(' + onError + '(e))}';
+
+print('ContextJS begin');
+ContextJS.execute(script,globals);
+print('ContextJS end');
