@@ -2,4 +2,4 @@
 test/
 node_modules/
 lib/
-plugin/*
+plugin/plugin.cocoascript

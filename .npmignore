@@ -2,5 +2,5 @@
 .DS_Store
 .git*
 test/
-plugin/*
 assets/
+plugin/plugin.cocoascript
