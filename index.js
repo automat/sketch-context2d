@@ -39,22 +39,27 @@ try{
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 const pluginScriptPath = 'plugin/plugin.cocoascript';
+const pluginJsPath     = 'plugin/plugin.js';
 
 function build(code,sourceMap){
     var scriptName = path.basename(scriptSrc);
     scriptName = scriptName.substr(0,scriptName.indexOf('.'));
 
     var pluginScriptCode = fs.readFileSync('./scripts/template.cocoascript','utf8')
-        .replace('__dirname__',      __dirname)
-        .replace('__dirname__',      __dirname)
-        .replace('__scriptName__',   scriptName)
-        .replace('__recreate__',     !!argv['recreate'])
-        .replace('__verbose__',      !!argv['verbose'])
-        .replace('__flatten__',      !!argv['flatten'])
-        .replace('__scriptContent__',code)
-        .replace('__sourceMap__',    sourceMap);
+        .replace(new RegExp('__dirname__','g'),      __dirname)
+        .replace(new RegExp('__scriptName__','g'),   scriptName)
+        .replace(new RegExp('__recreate__','g'),     !!argv['recreate'])
+        .replace(new RegExp('__verbose__','g'),      !!argv['verbose'])
+        .replace(new RegExp('__flatten__','g'),      !!argv['flatten'])
+        .replace(new RegExp('__scriptContent__','g'),code)
+        .replace(new RegExp('__sourceMap__','g'),    sourceMap);
 
     fs.writeFileSync(pluginScriptPath,pluginScriptCode);
+
+    code = '(function(){' + code + 'main(__canvasWrap__);})();' + sourceMap;
+
+    fs.writeFileSync(pluginJsPath,code);
+
 }
 
 function execute(){}

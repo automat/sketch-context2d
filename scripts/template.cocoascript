@@ -95,13 +95,12 @@ function onError(e){
     __result.handleError(e.message,e.stack)
 }
 
-var canvas = '(' + Context2DWrap + ')()';
-var script = '(' + function(canvas){ __scriptContent__ main(canvas);} + ')(' + canvas + ')';
-    script = 'try{' + script + '}catch(e){' + onError + '};';
-    script = script + "\n__sourceMap__";
+var path = '__dirname__/plugin/plugin.js';
+var code = NSString
+    .stringWithContentsOfFile_(path)
+    .replace(new RegExp('__canvasWrap__','g'),'(' + Context2DWrap + ')()');
 
-document.showMessage('Rendering Context2D...');
-ContextJS.execute(script,globals);
+ContextJS.execute(code,globals);
 
 if(__flatten__){
 
