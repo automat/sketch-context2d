@@ -1,39 +1,38 @@
-//based on https://github.com/matt-curtis/MochaJSWebScriptingObject
 var ContextJS = {
     execute : function(script,globals){
         globals = globals || {};
 
-        //TODO: add getter / setter
-        function toMochaJSWebScriptingObject(methodMap){
-            var uniqueClassName   = "MochaJSWebScriptingObject_DynamicClass_" + NSUUID.UUID().UUIDString();
-            var delegateClassDesc = MOClassDescription.allocateDescriptionForClassWithName_superclass_(uniqueClassName, NSObject);
-
-            var ctx = JSContext.new();
-            delegateClassDesc.addInstanceMethodWithSelector_function_("invokeUndefinedMethodFromWebScript:withArguments:", function(methodName, argsArray){
-                var method = methodMap[methodName];
-                if(!method){
-                    return null;
-                }
-                var result = method.call(null, argsArray);
-                return JSValue.valueWithObject_inContext_(result, ctx).toObject();
-            });
-
-            delegateClassDesc.registerClass();
-            return NSClassFromString(uniqueClassName).new();
-        }
-
         var webView      = WebView.new();
         var scriptObject = webView.windowScriptObject();
+
+        //based on https://github.com/matt-curtis/MochaJSWebScriptingObject
+        function toScriptingObject(properties){
+            var name = "MochaJSWebScriptingObject_DynamicClass_" + NSUUID.UUID().UUIDString();
+            var desc = MOClassDescription.allocateDescriptionForClassWithName_superclass_(name, NSObject);
+
+            var ctx = JSContext.new();
+            desc.addInstanceMethodWithSelector_function_(
+                "invokeUndefinedMethodFromWebScript:withArguments:",
+                function(name,args){
+                    var method = properties[name];
+                    if(!method){
+                        return null;
+                    }
+                    var result = method.call(null, args);
+                    return JSValue.valueWithObject_inContext_(result, ctx).toObject();
+                }
+            );
+
+            desc.registerClass();
+            return NSClassFromString(name).new();
+        }
 
         for(var key in globals){
             var global = globals[key];
             var type   = typeof global;
             switch (type){
-                case 'string':
-                case 'number':
-                    break;
                 case 'object':
-                    global = toMochaJSWebScriptingObject(global);
+                    global = toScriptingObject(global);
                     break;
                 default:
                     throw new Error('Type not supported "' + type + '"');
