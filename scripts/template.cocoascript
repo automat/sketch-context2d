@@ -63,10 +63,10 @@ group.setName_(SCRIPT_NAME + '_' + new Date().getTime());
 
 var globals = {
     console : {
-        log : function(args){
+        log : function(){
             var msg = '';
-            for(var i = 0; i < args.count(); ++i){
-                msg += args[i] + ', ';
+            for(var i = 0; i < arguments.length; ++i){
+                msg += arguments[i] + ', ';
             }
             print(!msg.length ? ' ' : msg.substr(0, msg.length - 2));
         }

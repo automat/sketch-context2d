@@ -169,9 +169,7 @@ function Context2DBindings(group){
     }
 
     function toString(val){
-        val = '' + val.JSValue().toString();
-        var front = val.charAt(0);
-        return !front.length ? '' : val;
+        return !val ? '' : ('' + val);
     }
 
     function toNumber(val){
@@ -190,11 +188,11 @@ function Context2DBindings(group){
         return radians * 180 / Math.PI;
     }
 
-    function appendRect(args){
-        var x = toNumber(args[0]);
-        var y = toNumber(args[1]);
-        var width  = toNumber(args[2]);
-        var height = toNumber(args[3]);
+    function appendRect(x,y,width,height){
+        x = toNumber(x);
+        y = toNumber(y);
+        width  = toNumber(width);
+        height = toNumber(height);
 
         path.appendBezierPathWithRect_(
             NSMakeRect(x,y,width,height)
@@ -228,6 +226,27 @@ function Context2DBindings(group){
     }
 
     var ctx = {
+        /*------------------------------------------------------------------------------------------------------------*/
+        // test
+        /*------------------------------------------------------------------------------------------------------------*/
+        testMethod1 : function(a){
+            print(a);
+        },
+        testMethod2 : function(a,b){
+            print(a);
+            print(b);
+        },
+        testMethod3 : function(a,b,c){
+            print(a);
+            print(b);
+            print(c);
+        },
+        testMethod4 : function(a,b,c,d){
+            print(a);
+            print(b);
+            print(c);
+            print(d);
+        },
         /*------------------------------------------------------------------------------------------------------------*/
         // state
         /*------------------------------------------------------------------------------------------------------------*/
@@ -275,20 +294,20 @@ function Context2DBindings(group){
         // transformations (default: transform is the identity matrix)
         /*------------------------------------------------------------------------------------------------------------*/
 
-        scale : function(args){
-            var x = toNumber(args[0]);
-            var y = toNumber(args[1]);
+        scale : function(x,y){
+            x = toNumber(x);
+            y = toNumber(y);
             state.transform.scaleXBy_yBy_(x,y);
             transformDirty = true;
         },
-        rotate : function(args){
-            var angle = toNumber(args[0]);
+        rotate : function(angle){
+            angle = toNumber(angle);
             state.transform.rotateByRadians_(angle);
             transformDirty = true;
         },
-        translate : function(args){
-            var x = toNumber(args[0]);
-            var y = toNumber(args[1]);
+        translate : function(x,y){
+            x = toNumber(x);
+            y = toNumber(y);
             state.transform.translateXBy_yBy_(x,y);
             transformDirty = true;
         },
@@ -341,16 +360,16 @@ function Context2DBindings(group){
         // colors and styles
         /*------------------------------------------------------------------------------------------------------------*/
         // (default: "black")
-        setStrokeStyle : function(args){
-            var color = parseColor(args[0]);
+        setStrokeStyle : function(color){
+            color = parseColor(color);
             setStatePropertyWithStylePart('strokeStyle', color, stylePartStroke);
         },
         // (default: "black")
         getStrokeStyle : function(){
             return state.strokeStyle;
         },
-        setFillStyle : function(args){
-            var color = parseColor(args[0]);
+        setFillStyle : function(color){
+            color = parseColor(color);
             setStatePropertyWithStylePart('fillStyle', color, stylePartFill);
         },
         getFillStyle : function(){
@@ -373,19 +392,19 @@ function Context2DBindings(group){
         // line caps / joins
         /*------------------------------------------------------------------------------------------------------------*/
 
-        setLineWidth : function(args){
-            var val = toNumberSafe(args[0]);
+        setLineWidth : function(lineWidth){
+            lineWidth = toNumber(lineWidth);
             setStatePropertyWithStylePart('lineWidth', val, stylePartStroke);
         },
         getLineWidth : function(){
             return state.lineWidth;
         },
-        setLineCap : function(args){
-            var val = toString(args[0]);
-            switch(val){
+        setLineCap : function(lineCap){
+            lineCap = toString(lineCap);
+            switch(lineCap){
                 case 'round' :
                 case 'square' :
-                    setStatePropertyWithStylePart('lineCap', val, stylePartStroke);
+                    setStatePropertyWithStylePart('lineCap', lineCap, stylePartStroke);
                     break;
                 default:
                     setStatePropertyWithStylePart('lineCap', 'butt', stylePartStroke);
@@ -395,12 +414,12 @@ function Context2DBindings(group){
         getLineCap : function(){
             return state.lineCap;
         },
-        setLineJoin : function(args){
-            var val = toString(args[0]);
-            switch(val){
+        setLineJoin : function(lineJoin){
+            lineJoin = toString(lineJoin);
+            switch(lineJoin){
                 case 'round':
                 case 'bevel':
-                    setStatePropertyWithStylePart('lineJoin', val, stylePartStroke);
+                    setStatePropertyWithStylePart('lineJoin', lineJoin, stylePartStroke);
                     break;
                 default:
                     setStatePropertyWithStylePart('lineJoin', 'miter', stylePartStroke);
@@ -410,27 +429,26 @@ function Context2DBindings(group){
         getLineJoin : function(){
             return stack.lineJoin;
         },
-        setMiterLimit : function(args){
-            var val = toNumber(args[0]);
-            setStatePropertyWithStylePart('miterLimit', val, stylePartStroke);
+        setMiterLimit : function(miterLimit){
+            miterLimit = toNumber(miterLimit);
+            setStatePropertyWithStylePart('miterLimit', miterLimit, stylePartStroke);
         },
         getMiterLimit : function(){
             return state.miterLimit;
         },
-        setLineDash : function(args){
-            var array  = args[0];
-            var length = array.count() || array.length || 0;
+        setLineDash : function(dash){
+            var length = dash.count() || dash.length || 0;
             state.lineDash.length = length;
             for(var i = 0; i < length; ++i){
-                state.lineDash[i] = array[i];
+                state.lineDash[i] = dash[i];
             }
         },
         getLineDash : function(){
             return state.lineDash.slice(0);
         },
-        setLineDashOffset : function(args){
-            var val = toNumber(args[0]);
-            setStatePropertyWithStylePart('lineDashOffset',val,stylePartStroke);
+        setLineDashOffset : function(offset){
+            offset = toNumber(offset);
+            setStatePropertyWithStylePart('lineDashOffset',offset,stylePartStroke);
         },
         getLineDashOffset : function(){
             return state.lineDashOfffset;
@@ -440,30 +458,30 @@ function Context2DBindings(group){
         // shadows
         /*------------------------------------------------------------------------------------------------------------*/
 
-        setShadowOffsetX : function(args){
-            var val = toNumber(args[0]);
-            setStatePropertyWithStylePart('shadowOffsetX',val,stylePartStroke);
+        setShadowOffsetX : function(offset){
+            offset = toNumber(offset);
+            setStatePropertyWithStylePart('shadowOffsetX',offset,stylePartStroke);
         },
         getShadowOffsetX : function(){
             return state.shadowOffsetX;
         },
-        setShadowOffsetY : function(args){
-            var val = toNumber(args[0]);
-            setStatePropertyWithStylePart('shadowOffsetY',val,stylePartStroke);
+        setShadowOffsetY : function(offset){
+            offset = toNumber(offset);
+            setStatePropertyWithStylePart('shadowOffsetY',offset,stylePartStroke);
         },
         getShadowOffsetY : function(){
             return state.shadowOffsetY
         },
-        setShadowColor : function(args){
-            var color = parseColor(args[0]);
+        setShadowColor : function(color){
+            color = parseColor(color);
             setStatePropertyWithStylePart('shadowColor',color,stylePartStroke);
         },
         getShadowColor : function(){
             return state.shadowColor;
         },
-        setShadowBlur : function(args){
-            var val = toNumber(args[0]);
-            setStatePropertyWithStylePart('shadowBlur',val,stylePartStroke);
+        setShadowBlur : function(blur){
+            blur = toNumber(blur);
+            setStatePropertyWithStylePart('shadowBlur',blur,stylePartStroke);
         },
         getShadowBlur : function(){
             return state.shadowBlur;
@@ -480,32 +498,31 @@ function Context2DBindings(group){
             }
             path.closePath();
         },
-        moveTo : function(args){
+        moveTo : function(x,y){
             if(!path){
                 return;
             }
-            var x = toNumber(args[0]);
-            var y = toNumber(args[1]);
+            x = toNumber(x);
+            y = toNumber(y);
             path.moveToPoint(NSMakePoint(x,y));
         },
-        lineTo : function(args){
+        lineTo : function(x,y){
             if(!path){
                 return;
             }
-            var x = toNumber(args[0]);
-            var y = toNumber(args[1]);
+            x = toNumber(x);
+            y = toNumber(y);
             path.lineToPoint_(NSMakePoint(x,y));
             pathDirty = true;
         },
-        quadraticCurveTo : function(args){
+        quadraticCurveTo : function(cpx,cpy,x,y){
             if(!path){
                 return;
             }
-            var cpx = toNumber(args[0]);
-            var cpy = toNumber(args[1]);
-            var x = toNumber(args[2]);
-            var y = toNumber(args[3]);
-
+            cpx = toNumber(cpx);
+            cpy = toNumber(cpy);
+            x = toNumber(x);
+            y = toNumber(y);
             var cp = NSMakePoint(cpx,cpy);
 
             path.curveToPoint_(
@@ -514,16 +531,16 @@ function Context2DBindings(group){
             );
             pathDirty = true;
         },
-        bezierCurveTo : function(args){
+        bezierCurveTo : function(cp1x,cp1y,cp2x,cp2y,x,y){
             if(!path){
                 return;
             }
-            var cp1x = toNumber(args[0]);
-            var cp1y = toNumber(args[1]);
-            var cp2x = toNumber(args[2]);
-            var cp2y = toNumber(args[3]);
-            var x = toNumber(args[4]);
-            var y = toNumber(args[5]);
+            cp1x = toNumber(cp1x);
+            cp1y = toNumber(cp1y);
+            cp2x = toNumber(cp2x);
+            cp2y = toNumber(cp2y);
+            x = toNumber(x);
+            y = toNumber(y);
 
             path.curveToPoint_(
                 NSMakePoint(x,y),
@@ -532,34 +549,34 @@ function Context2DBindings(group){
             );
             pathDirty = true;
         },
-        rect : function(args){
+        rect : function(x,y,width,height){
             if(!path){
                 return;
             }
-            appendRect(args);
+            appendRect(x,y,width,height);
             pathDirty = true;
         },
-        fillRect : function(args){
+        fillRect : function(x,y,width,height){
             beginPath();
-            appendRect(args);
+            appendRect(x,y,width,height);
             pathDirty = true;
             addPathWithStylePart(false,true);
         },
-        strokeRect : function(args){
+        strokeRect : function(x,y,width,height){
             beginPath();
-            appendRect(args);
+            appendRect(x,y,width,height);
             pathDirty = true;
             addPathWithStylePart(true,false);
         },
-        arcTo : function(args){
+        arcTo : function(x1,y1,x2,y2,radius){
             if(!path){
                 return;
             }
-            var x1 = toNumber(args[0]);
-            var y1 = toNumber(args[1]);
-            var x2 = toNumber(args[2]);
-            var y2 = toNumber(args[3]);
-            var radius = toNumber(args[4]);
+            x1 = toNumber(x1);
+            y1 = toNumber(y1);
+            x2 = toNumber(x2);
+            y2 = toNumber(y2);
+            radius = toNumber(radius);
 
             path.appendBezierPathWithArcFromPoint_toPoint_radius(
                 NSMakePoint(x1,y1),
@@ -568,16 +585,16 @@ function Context2DBindings(group){
             );
             pathDirty = true;
         },
-        arc : function(args){
+        arc : function(x,y,radius,startAngle,endAngle,anticlockwise){
             if(!path){
                 return;
             }
-            var x = toNumber(args[0]);
-            var y = toNumber(args[1]);
-            var radius = toNumber(args[2]);
-            var startAngle = toNumber(args[3]);
-            var endAngle   = toNumber(args[4]);
-            var anticlockwise = toBoolean(args[5]);
+            x = toNumber(x);
+            y = toNumber(y);
+            radius = toNumber(radius);
+            startAngle = toNumber(startAngle);
+            endAngle   = toNumber(endAngle);
+            anticlockwise = toBoolean(anticlockwise);
 
             path.appendBezierPathWithArcWithCenter_radius_startAngle_endAngle_clockwise_(
                 NSMakePoint(x,y),
@@ -609,45 +626,45 @@ function Context2DBindings(group){
         /*------------------------------------------------------------------------------------------------------------*/
 
         // (default: "10px sans-serif")
-        setFont : function(args){
-            var val = toString(args[0]);
+        setFont : function(font){
+            font = toString(font);
             //TODO: parse font correctly here
-            state.font = val;
+            state.font = font;
         },
         getFont : function(){
             return state.font;
         },
         // "start", "end", "left", "right", "center" (default: "start")
-        setTextAlign : function(args){
-            var val = toString(args[0]);
-            switch(val){
+        setTextAlign : function(textAlign){
+            textAlign = toString(textAlign);
+            switch(textAlign){
                 case 'start':
                 case 'end':
                 case 'left':
                 case 'right':
                 case 'center':
-                    state.textAlign = val;
+                    state.textAlign = textAlign;
                     break;
                 default:
-                    WebScriptObject.throwException('Unsupported textAlign "' + val + '"');
+                    WebScriptObject.throwException('Unsupported textAlign "' + textAlign + '"');
             }
         },
         // "top", "hanging", "middle", "alphabetic", "ideographic", "bottom" (default: "alphabetic")
         getTextAlign : function(){
             return state.textAlign
         },
-        setTextBaseline : function(args){
-            var val = toString(args[0]);
-            switch(val){
+        setTextBaseline : function(textBaseline){
+            textBaseline = toString(textBaseline);
+            switch(textBaseline){
                 case 'top':
                 case 'hanging':
                 case 'middle':
                 case 'alphabetic':
                 case 'ideographic':
-                    state.textBaseline = val;
+                    state.textBaseline = textBaseline;
                     break;
                 default:
-                    WebScriptObject.throwException('Unsupported textBaseline "' + val + '"');
+                    WebScriptObject.throwException('Unsupported textBaseline "' + textBaseline + '"');
             }
         },
         getTextBaseline : function(){
@@ -704,35 +721,35 @@ function Context2DWrap(){
         set globalAlpha(val){__bindings.setGlobalAlpha(val);},
         get globalAlpha()   {return __bindings.getGlobalAlpha();},
         //colors and styles
-        set strokeStyle(val){__bindings.setStrokeStyle([val]);},
+        set strokeStyle(val){__bindings.setStrokeStyle(val);},
         get strokeStyle()   {return __bindings.getStrokeStyle();},
-        set fillStyle(val)  {__bindings.setFillStyle([val])},
+        set fillStyle(val)  {__bindings.setFillStyle(val)},
         get fillStyle()     {return __bindings.getFillStyle();},
         //createLinearGradient : ctx.createLinearGradient,
         //createRadialGradient : ctx.createRadialGradient,
         //createPattern : ctx.createPattern,
 
         //line caps/joins
-        set lineWidth(val)     {__bindings.setLineWidth([val]);},
+        set lineWidth(val)     {__bindings.setLineWidth(val);},
         get lineWidth()        {return __bindings.getLineWidth();},
-        set lineCap(val)       {__bindings.setLineCap([val]);},
+        set lineCap(val)       {__bindings.setLineCap(val);},
         get lineCap()          {return __bindings.getLineCap();},
-        set lineJoin(val)      {__bindings.setLineJoin(arguments);},
+        set lineJoin(val)      {__bindings.setLineJoin(val);},
         get lineJoin()         {return __bindings.getLineJoin();},
-        set miterLimit(val)    {__bindings.setMiterLimit(arguments);},
+        set miterLimit(val)    {__bindings.setMiterLimit(val);},
         get miterLimit()       {return __bindings.getMiterLimit();},
         setLineDash :          function(val){__bindings.setLineDash(val);},
         getLineDash :          function(){return __bindings.getLineDash();},
-        set lineDashOffset(val){__bindings.setLineDashOffset(arguments);},
+        set lineDashOffset(val){__bindings.setLineDashOffset(val);},
         get lineDashOffset()   {return __bindings.getLineDashOffset();},
         //shadows
-        set shadowOffsetX(val){__bindings.setShadowOffsetX(arguments);},
+        set shadowOffsetX(val){__bindings.setShadowOffsetX(val);},
         get shadowOffsetX()   {return __bindings.getShadowOffsetX();},
-        set shadowOffsetY(val){__bindings.setShadowOffsetY(arguments);},
+        set shadowOffsetY(val){__bindings.setShadowOffsetY(val);},
         get shadowOffsetY()   {return __bindings.getShadowOffsetY();},
-        set shadowColor(val)  {__bindings.setShadowColor(arguments);},
+        set shadowColor(val)  {__bindings.setShadowColor(val);},
         get shadowColor()     {return __bindings.getShadowColor();},
-        set shadowBlur(val)   {__bindings.setShadowBlur(arguments);},
+        set shadowBlur(val)   {__bindings.setShadowBlur(val);},
         get shadowBlur()      {return __bindings.getShadowBlur();},
         //path API
         beginPath :        function(){__bindings.beginPath();},
