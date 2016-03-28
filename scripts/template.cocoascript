@@ -66,39 +66,40 @@ group.setName_(SCRIPT_NAME + '_' + new Date().getTime());
 /* INJECTED GLOBALS JS CONTEXT */
 
 var globals = {
-    console: {
+    console : {
         log : function(args){
             var msg = '';
             for(var i = 0; i < args.count(); ++i){
                 msg += args[i] + ', ';
             }
-            print(!msg.length ? ' ' : msg.substr(0,msg.length-2));
+            print(!msg.length ? ' ' : msg.substr(0, msg.length - 2));
         }
     },
-    __result : {
-        handleError : function(args){
+    __sketch : {
+        handleScriptError : function(err){
             print('Error: ' + args[0] + ' @:');
             var stack = args[1].split('\n');
             for(var i = 0; i < stack.length; ++i){
                 print('    ' + stack[i]);
             }
+        },
+        artboardWidth : function(){
+            return +artboard.bounds().size.width;
+        },
+        artboardHeight : function(){
+            return +artboard.bounds().size.height;
         }
     },
-    __artboardWidth  : +artboard.bounds().size.width,
-    __artboardHeight : +artboard.bounds().size.height,
     __bindings :       Context2DBindings(group)
 };
 
 /* SCRIPT */
 
-function onError(e){
-    __result.handleError(e.message,e.stack)
-}
-
 var path = '__dirname__/plugin/plugin.js';
 var code = NSString
     .stringWithContentsOfFile_(path)
-    .replace(new RegExp('__canvasWrap__','g'),'(' + Context2DWrap + ')()');
+    .replace(new RegExp('__canvasWrap__','g'),'(' + Context2DWrap + ')()')
+    .replace(new RegExp('__onError__','g'),'__sketch.handleError(e.message,e.stack)');
 
 ContextJS.execute(code,globals);
 
