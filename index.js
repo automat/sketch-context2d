@@ -53,11 +53,9 @@ function build(code,sourceMap){
         .replace(new RegExp('__flatten__','g'),      !!argv['flatten'])
         .replace(new RegExp('__scriptContent__','g'),code)
         .replace(new RegExp('__sourceMap__','g'),    sourceMap);
-
     fs.writeFileSync(pluginScriptPath,pluginScriptCode);
 
-    code = '(function(){' + code + 'main(__canvasWrap__);})();' + sourceMap;
-
+    code = 'try{(function(){' + code + 'main(__canvasWrap__);})();}catch(e){__onError__}' + sourceMap;
     fs.writeFileSync(pluginJsPath,code);
 
 }
@@ -67,17 +65,25 @@ function execute(){}
 /*--------------------------------------------------------------------------------------------------------------------*/
 // Browserify
 /*--------------------------------------------------------------------------------------------------------------------*/
-
 console.log('Preparing script...');
 
 const browserify = require('browserify')({
     debug : true,
     standalone : 'main'
 });
+const brfs = require('brfs');
+const browserifyReplace = require('browserify-replace');
 
 var result = '';
-browserify.add(scriptSrc);
-browserify.bundle()
+browserify
+    .add(scriptSrc)
+    .transform(browserifyReplace,{
+        replace:[{
+            from:'__dirnamePlugin',
+            to:"'" + path.resolve(path.dirname(scriptSrc)) + "'"}]
+    })
+    .transform(brfs)
+    .bundle()
     .on('data',function(data){
         result += data;
     })
