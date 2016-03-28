@@ -9,7 +9,9 @@
     },
     "main": "index.js",
     "dependencies": {
-        "minimist" : "^1.2.0",
+        "minimist"   : "^1.2.0",
+        "browserify" : "^13.0.0",
+        "watchify"   : "^3.7.0"
     },
     "license": "MIT"
 }
