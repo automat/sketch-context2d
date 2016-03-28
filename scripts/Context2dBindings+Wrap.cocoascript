@@ -86,10 +86,7 @@ function Context2DBindings(group){
             return;
         }
 
-        if(transformDirty){
-            //layer = null;
-            //path.transformUsingAffineTransform_(state.transform);
-        }
+        path.transformUsingAffineTransform_(state.transform);
 
         if(!layer){
             layer = MSShapeGroup.shapeWithBezierPath(path);
