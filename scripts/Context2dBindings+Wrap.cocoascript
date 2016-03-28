@@ -685,8 +685,8 @@ function Context2DWrap(){
     //So manual wrapping atm.
 
     var canvas = {
-        get width() {return __artboardWidth;},
-        get height(){return __artboardHeight;}
+        get width() {return __sketch.artboardWidth();},
+        get height(){return __sketch.artboardHeight();}
     };
 
     var context2d = {
