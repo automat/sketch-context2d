@@ -95,7 +95,7 @@ var path = '__dirname__/plugin/plugin.js';
 var code = NSString
     .stringWithContentsOfFile_(path)
     .replace(new RegExp('__canvasWrap__','g'),'(' + Context2DWrap + ')()')
-    .replace(new RegExp('__onError__','g'),'__sketch.handleError(e.message,e.stack)');
+    .replace(new RegExp('__onError__','g'),'__sketch.handleScriptError(e.message,e.stack)');
 
 ContextJS.execute(code,globals);
 
