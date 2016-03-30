@@ -3,14 +3,23 @@
 
 var SCRIPT_NAME = '__scriptName__';
 
-var document = context.document;
-var page     = document.currentPage();
-var artboard = page.currentArtboard();
+var document  = context.document;
+var page      = document.currentPage();
+var artboard  = page.currentArtboard();
+var selection = context.selection;
+var target    = null;
+
+if(selection.count() == 0){
+    target = artboard;
+} else {
+    var first = selection.firstObject();
+    target = first.class() == MSLayerGroup ? first : artboard;
+}
 
 /* CHECK RENDER TARGET SET */
 
-if(!artboard){
-    throw new Error('No artboard selected.');
+if(!target){
+    throw new Error('No target selected.');
 }
 
 /* SCRIPT RENDER TARGET GROUP */
@@ -38,7 +47,7 @@ if(!__recreate__) {
         }
     }
 
-    find(artboard);
+    find(target);
 
     if(contextGroups.length > 0){
         contextGroups.sort(function(a, b){
@@ -51,13 +60,18 @@ if(!__recreate__) {
         });
 
         group = contextGroups[0];
-        artboard.removeLayer(group);
+        target.removeLayer(group);
     }
 }
 
 group = MSLayerGroup.new();
-artboard.addLayers([group]);
+target.addLayers([group]);
 group.setName_(SCRIPT_NAME + '_' + new Date().getTime());
+
+//canvas size is fixed
+var targetSize   = target.bounds().size;
+var targetWidth  = +targetSize.width;
+var targetHeight = +targetSize.height;
 
 /* INJECTED GLOBALS JS CONTEXT */
 
@@ -79,14 +93,30 @@ var globals = {
                 print('    ' + stack[i]);
             }
         },
-        artboardWidth : function(){
-            return +artboard.bounds().size.width;
+        //get target (artboard/group) width
+        targetWidth : function(){
+            return targetWidth;
         },
-        artboardHeight : function(){
-            return +artboard.bounds().size.height;
+        //get target (artboard/group) height
+        targetHeight : function(){
+            return targetHeight;
+        },
+        //set target (artboard/group) width
+        setTargetWidth : function(width){
+            width = +width;
+            target.frame().setWidth_(width);
+            targetWidth = width;
+
+        },
+        //set target (artboard/group) height
+        setTargetHeight : function(height){
+            height = +height;
+            target.frame().setHeight_(height);
+            targetHeight = height;
         }
     },
-    __bindings :       Context2DBindings(group)
+    //bindings export
+    __bindings :  Context2DBindings(group)
 };
 
 /* SCRIPT */
@@ -102,5 +132,8 @@ ContextJS.execute(code,globals);
 if(__flatten__){
 
 }
+
+//keep target selection valid
+target.select_byExpandingSelection_(true,false);
 
 print('Done');
