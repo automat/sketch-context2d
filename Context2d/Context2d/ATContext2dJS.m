@@ -13,8 +13,15 @@
 #import <JavaScriptCore/JavaScriptCore.h>
 
 #pragma mark - ATContext2dJS
+
+static BOOL verboseLog = NO;
+
 @implementation ATContext2dJS
-+ (void) runScript:(NSString*)script withSourceMap:(NSString*)sourceMap andTarget:(MSLayerGroup*)target{
++ (void) setVerbose:(BOOL)verbose{
+    verboseLog = verbose;
+}
+
++ (void) runScript:(NSString*)script andTarget:(MSLayerGroup*)target{
     //for now
     JSContext *context = [JSContext new];
     
@@ -49,8 +56,8 @@
     [context evaluateScript:script_];
 }
 
-+ (void) runScriptAtPath:(NSString *)path withSourceMap:(NSString*)sourceMap andTarget:(MSLayerGroup *)target{
++ (void) runScriptAtPath:(NSString *)path andTarget:(MSLayerGroup *)target{
     NSString *script = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil];
-    [self runScript:script withSourceMap:sourceMap andTarget:target];
+    [self runScript:script andTarget:target];
 }
 @end
