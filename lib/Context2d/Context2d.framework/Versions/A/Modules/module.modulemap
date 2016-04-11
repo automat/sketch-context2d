@@ -1,0 +1,6 @@
+framework module Context2d {
+  umbrella header "Context2d.h"
+
+  export *
+  module * { export * }
+}
