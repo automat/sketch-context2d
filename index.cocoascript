@@ -82,12 +82,33 @@ group = MSLayerGroup.new();
 target.addLayers([group]);
 group.setName_(SCRIPT_NAME + '_' + new Date().getTime());
 
+var time;
+if(!!__verbose__){
+    time = new Date().getTime();
+    print('Script start');
+}
+
 //run script with context
-ATContext2dJS.runScriptAtPath_withSourceMap_andTarget(__dirname__ + '/plugin/plugin.js',null,group);
+ATContext2dJS.setVerbose(!!__verboselog__);
+ATContext2dJS.runScriptAtPath_andTarget(__dirname__ + '/plugin/plugin.js',group);
 
 if(__flatten__){
-
 }
 
 //keep target selection valid
 target.select_byExpandingSelection_(true,false);
+
+if(!!__verbose__){
+    function pad(num, size){
+        var str = '' + num;
+        while(str.length < size){
+            str = '0' + str;
+        }
+        return str;
+    }
+
+    var duration = new Date(new Date().getTime() - time);
+    print('Script end: ' + pad(duration.getHours(),2) + ':' +
+                           pad(duration.getMinutes(),2) + ':' +
+                           pad(duration.getSeconds(),2));
+}

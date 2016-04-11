@@ -5,11 +5,12 @@ const path = require('path');
 // Help
 
 if(argv['help']){
-    console.log('--help     ','Show all argument options');
-    console.log('--verbose  ','Log js script line number and columns');
-    console.log('--recreate ','Don´t override target groups, create new ones')
-    console.log('--flatten  ','Flattens resulting path group to image');
-    console.log('--watch    ','Watch js script');
+    console.log('--help     ',   'Show all argument options');
+    console.log('--verbose  ',   'Log process');
+    console.log('--log-verbose ','Log js script line number and columns');
+    console.log('--recreate ',   'Don´t override target groups, create new ones')
+    console.log('--flatten  ',   'Flattens resulting path group to image');
+    console.log('--watch    ',   'Watch js script');
     console.log('');
 }
 
@@ -50,6 +51,7 @@ function runScript(scriptPath, scriptSource, sourceMap){
         .replace(new RegExp('__scriptname__','g'), "'" + name + "'")
         .replace(new RegExp('__recreate__', 'g'),  !!argv['recreate'])
         .replace(new RegExp('__verbose__', 'g'),   !!argv['verbose'])
+        .replace(new RegExp('__verboselog__','g'), !!argv['verbose-log'])
         .replace(new RegExp('__flatten__', 'g'),   !!argv['flatten']);
 
     try{
@@ -63,6 +65,7 @@ function runScript(scriptPath, scriptSource, sourceMap){
     fs.writeFileSync(path.join(PLUGIN_DIR,'plugin.cocoascript'),plugin);
     fs.writeFileSync(path.join(PLUGIN_DIR,'plugin.js'),scriptSource);
 
+    //http://mail.sketchplugins.com/pipermail/dev_sketchplugins.com/2014-August/000548.html
     //http://developer.sketchapp.com/code-examples/third-party-integrations/
     var cmd = COSCRIPT_PATH + ' -e "[[[COScript app:\\"Sketch\\"] delegate] runPluginAtURL:[NSURL fileURLWithPath:\\""' + pluginCOPath + '"\\"]]"';
     exec(cmd, function (err, stdout, stderr) {
@@ -71,59 +74,14 @@ function runScript(scriptPath, scriptSource, sourceMap){
         }
         console.log(stdout);
     });
-
-
-
-
-    //var plugin = fs.readFileSync('./index.cocoascript','utf8')
-    //    .replace(new RegExp('__dirname__', 'g'),       __dirname)
-    //    .replace(new RegExp('__scriptName__', 'g'),    name)
-    //    .replace(new RegExp('__recreate__', 'g'),      !!argv['recreate'])
-    //    .replace(new RegExp('__verbose__', 'g'),       !!argv['verbose'])
-    //    .replace(new RegExp('__flatten__', 'g'),       !!argv['flatten'])
-    //    .replace(new RegExp('__scriptContent__', 'g'), code)
-    //    .replace(new RegExp('__sourceMap__', 'g'),     sourceMap);
-
-
-
-
-    //var scriptName = path.basename(scriptSrc);
-    //scriptName = scriptName.substr(0,scriptName.indexOf('.'));
-    //
-    //var pluginScriptCode = fs.readFileSync('./scripts/template.cocoascript','utf8')
-    //    .replace(new RegExp('__dirname__','g'),      __dirname)
-    //    .replace(new RegExp('__scriptName__','g'),   scriptName)
-    //    .replace(new RegExp('__recreate__','g'),     !!argv['recreate'])
-    //    .replace(new RegExp('__verbose__','g'),      !!argv['verbose'])
-    //    .replace(new RegExp('__flatten__','g'),      !!argv['flatten'])
-    //    .replace(new RegExp('__scriptContent__','g'),code)
-    //    .replace(new RegExp('__sourceMap__','g'),    sourceMap);
-    //fs.writeFileSync(pluginScriptPath,pluginScriptCode);
-    //
-    //code = 'try{(function(){' + code + 'main(__canvasWrap__);})();}catch(e){__onError__}' + sourceMap;
-    //fs.writeFileSync(pluginJsPath,code);
 }
-
-//const coscriptPath = './lib/coscript/coscript';
-//const exec         = require('child_process').exec;
-//
-//// Execute Plugin
-//function execute(){
-//    console.log('Rendering script...');
-//    var cmd = coscriptPath + ' -e "[[[COScript app:\\"Sketch\\"] delegate] runPluginAtURL:[NSURL fileURLWithPath:\\""' + pluginScriptPath + '"\\"]]"';
-//    exec(cmd, function (err, stdout, stderr) {
-//        if(err || stderr){
-//            throw new Error(err);
-//        }
-//        console.log(stdout);
-//    });
-//}
-
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 // Browserify
 /*--------------------------------------------------------------------------------------------------------------------*/
-console.log('Preparing script...');
+if(!!argv['verbose']){
+    console.log('Preparing script...');
+}
 
 const browserify = require('browserify')({
     debug : true,
