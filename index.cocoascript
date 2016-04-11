@@ -1,0 +1,93 @@
+if(!NSClassFromString('ATContext2dJS')){
+    if(!Mocha.sharedRuntime().loadFrameworkWithName_inDirectory_('Context2d', __dirname__ + '/lib/Context2d')){
+        throw new Error('Unable to load Context2d.framework');
+    }
+}
+
+var SCRIPT_NAME = __scriptname__;
+
+//filter selection
+var document  = context.document;
+if(!document){
+    print('No document selected.');
+    return;
+}
+
+var page      = document.currentPage();
+var artboard  = page.currentArtboard();
+var selection = context.selection;
+var target    = null;
+
+if(selection.count() == 0){
+    target = artboard;
+} else {
+    var first = selection.firstObject();
+    target = first.class() == MSLayerGroup ? first : artboard;
+}
+
+if(!target && document.artboards().count() > 0){
+    artboard = document.artboards().firstObject();
+    target   = artboard;
+}
+
+//check render target set
+if(!target){
+    print('No target selected.');
+    return;
+}
+
+//script render target group
+var group;
+if(!__recreate__){
+    var contextGroups = [];
+
+    function find(element){
+        var class_ = element.class();
+        if(class_ != MSArtboardGroup && class_ != MSLayerGroup){
+            return;
+        }
+        var name = element.name();
+        if(name.indexOf(SCRIPT_NAME) != -1){
+            if(name.indexOf('keep') == -1){
+                contextGroups.push(element);
+            }
+        }
+
+        var layers = element.layers();
+        var length = layers.count();
+        for(var i = 0; i < length; ++i){
+            find(layers.objectAtIndex(i));
+        }
+    }
+
+    find(target);
+
+    if(contextGroups.length > 0){
+        contextGroups.sort(function(a, b){
+            var tokensA = a.name().split('_');
+            var tokensB = b.name().split('_');
+            var timestampA = tokensA[tokensA.length - 1];
+            var timestampB = tokensB[tokensB.length - 1];
+
+            return timestampA > timestampB ? -1 : 1;
+        });
+
+        group = contextGroups[0];
+        target.removeLayer(group);
+    }
+}
+
+//create/override group
+group = MSLayerGroup.new();
+target.addLayers([group]);
+group.setName_(SCRIPT_NAME + '_' + new Date().getTime());
+
+//run script with context
+ATContext2dJS.runScriptAtPath_withSourceMap_andTarget(__dirname__ + '/plugin/plugin.js',null,group);
+
+if(__flatten__){
+
+}
+
+//keep target selection valid
+target.select_byExpandingSelection_(true,false);
