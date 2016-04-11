@@ -1,6 +1,8 @@
 .idea
 .DS_Store
 .git*
-test/
 assets/
-plugin/plugin.cocoascript
+Context2d/
+test/
+scripts/
+plugin/
