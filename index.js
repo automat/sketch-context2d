@@ -18,49 +18,107 @@ if(argv['help']){
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 // Validate script input
-var scriptSrc = argv._[0];
-if(!scriptSrc){
+var scriptPath = argv._[0];
+if(!scriptPath){
     console.log('No js script path passed.');
     return;
 }
 
-
 // validate script path
 try{
-    fs.accessSync(scriptSrc, fs.F_OK);
+    fs.accessSync(scriptPath, fs.F_OK);
 } catch (e) {
     console.log("Invalid script path.");
     return;
 }
 
-
 /*--------------------------------------------------------------------------------------------------------------------*/
-// Build plugin
+// run
 /*--------------------------------------------------------------------------------------------------------------------*/
 
-const pluginScriptPath = 'plugin/plugin.cocoascript';
-const pluginJsPath     = 'plugin/plugin.js';
+const exec = require('child_process').exec;
 
-function build(code,sourceMap){
-    var scriptName = path.basename(scriptSrc);
-    scriptName = scriptName.substr(0,scriptName.indexOf('.'));
+const PLUGIN_DIR    = './plugin';
+const COSCRIPT_PATH = './lib/COScript/coscript';
 
-    var pluginScriptCode = fs.readFileSync('./scripts/template.cocoascript','utf8')
-        .replace(new RegExp('__dirname__','g'),      __dirname)
-        .replace(new RegExp('__scriptName__','g'),   scriptName)
-        .replace(new RegExp('__recreate__','g'),     !!argv['recreate'])
-        .replace(new RegExp('__verbose__','g'),      !!argv['verbose'])
-        .replace(new RegExp('__flatten__','g'),      !!argv['flatten'])
-        .replace(new RegExp('__scriptContent__','g'),code)
-        .replace(new RegExp('__sourceMap__','g'),    sourceMap);
-    fs.writeFileSync(pluginScriptPath,pluginScriptCode);
+function runScript(scriptPath, scriptSource, sourceMap){
+    var name = path.basename(scriptPath);
+        name = name.substr(0,name.indexOf('.'));
 
-    code = 'try{(function(){' + code + 'main(__canvasWrap__);})();}catch(e){__onError__}' + sourceMap;
-    fs.writeFileSync(pluginJsPath,code);
+    var plugin = fs.readFileSync('./index.cocoascript','utf8')
+        .replace(new RegExp('__dirname__','g'),    "'" + __dirname + "'")
+        .replace(new RegExp('__scriptname__','g'), "'" + name + "'")
+        .replace(new RegExp('__recreate__', 'g'),  !!argv['recreate'])
+        .replace(new RegExp('__verbose__', 'g'),   !!argv['verbose'])
+        .replace(new RegExp('__flatten__', 'g'),   !!argv['flatten']);
 
+    try{
+        fs.accessSync(PLUGIN_DIR, fs.F_OK)
+    } catch (e){
+        fs.mkdirSync(PLUGIN_DIR);
+    }
+
+    var pluginCOPath = path.join(PLUGIN_DIR,'plugin.cocoascript');
+
+    fs.writeFileSync(path.join(PLUGIN_DIR,'plugin.cocoascript'),plugin);
+    fs.writeFileSync(path.join(PLUGIN_DIR,'plugin.js'),scriptSource);
+
+    //http://developer.sketchapp.com/code-examples/third-party-integrations/
+    var cmd = COSCRIPT_PATH + ' -e "[[[COScript app:\\"Sketch\\"] delegate] runPluginAtURL:[NSURL fileURLWithPath:\\""' + pluginCOPath + '"\\"]]"';
+    exec(cmd, function (err, stdout, stderr) {
+        if(err || stderr){
+            throw new Error(err || stderr);
+        }
+        console.log(stdout);
+    });
+
+
+
+
+    //var plugin = fs.readFileSync('./index.cocoascript','utf8')
+    //    .replace(new RegExp('__dirname__', 'g'),       __dirname)
+    //    .replace(new RegExp('__scriptName__', 'g'),    name)
+    //    .replace(new RegExp('__recreate__', 'g'),      !!argv['recreate'])
+    //    .replace(new RegExp('__verbose__', 'g'),       !!argv['verbose'])
+    //    .replace(new RegExp('__flatten__', 'g'),       !!argv['flatten'])
+    //    .replace(new RegExp('__scriptContent__', 'g'), code)
+    //    .replace(new RegExp('__sourceMap__', 'g'),     sourceMap);
+
+
+
+
+    //var scriptName = path.basename(scriptSrc);
+    //scriptName = scriptName.substr(0,scriptName.indexOf('.'));
+    //
+    //var pluginScriptCode = fs.readFileSync('./scripts/template.cocoascript','utf8')
+    //    .replace(new RegExp('__dirname__','g'),      __dirname)
+    //    .replace(new RegExp('__scriptName__','g'),   scriptName)
+    //    .replace(new RegExp('__recreate__','g'),     !!argv['recreate'])
+    //    .replace(new RegExp('__verbose__','g'),      !!argv['verbose'])
+    //    .replace(new RegExp('__flatten__','g'),      !!argv['flatten'])
+    //    .replace(new RegExp('__scriptContent__','g'),code)
+    //    .replace(new RegExp('__sourceMap__','g'),    sourceMap);
+    //fs.writeFileSync(pluginScriptPath,pluginScriptCode);
+    //
+    //code = 'try{(function(){' + code + 'main(__canvasWrap__);})();}catch(e){__onError__}' + sourceMap;
+    //fs.writeFileSync(pluginJsPath,code);
 }
 
-function execute(){}
+//const coscriptPath = './lib/coscript/coscript';
+//const exec         = require('child_process').exec;
+//
+//// Execute Plugin
+//function execute(){
+//    console.log('Rendering script...');
+//    var cmd = coscriptPath + ' -e "[[[COScript app:\\"Sketch\\"] delegate] runPluginAtURL:[NSURL fileURLWithPath:\\""' + pluginScriptPath + '"\\"]]"';
+//    exec(cmd, function (err, stdout, stderr) {
+//        if(err || stderr){
+//            throw new Error(err);
+//        }
+//        console.log(stdout);
+//    });
+//}
+
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 // Browserify
@@ -76,11 +134,11 @@ const browserifyReplace = require('browserify-replace');
 
 var result = '';
 browserify
-    .add(scriptSrc)
+    .add(scriptPath)
     .transform(browserifyReplace,{
         replace:[{
             from:'__dirnamePlugin',
-            to:"'" + path.resolve(path.dirname(scriptSrc)) + "'"}]
+            to:"'" + path.resolve(path.dirname(scriptPath)) + "'"}]
     })
     .transform(brfs)
     .bundle()
@@ -89,11 +147,15 @@ browserify
     })
     .on('end',function(){
         var sourceMapIndex = result.indexOf('//# sourceMappingURL');
-        var sourceMap = result.substr(sourceMapIndex);
-        var code = result.substr(0,sourceMapIndex);
+        var sourceMap      = result.substr(sourceMapIndex);
+        var scriptSource   = result.substr(0,sourceMapIndex);
 
-        build(code.substr(0,code.length-1), sourceMap.split('\n')[0]);
-        execute();
+        scriptSource = scriptSource.substr(0,scriptSource.length-1);
+        //appended exported method call with canvas instance
+        scriptSource = scriptSource + 'main(__ATSketchCanvasInstance);';
+        sourceMap    = sourceMap.split('\n')[0];
+
+        runScript(scriptPath, scriptSource, sourceMap);
     })
     .on('error',function(err){
        throw new Error(err);
