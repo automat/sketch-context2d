@@ -23,33 +23,45 @@ static BOOL verboseLog = NO;
 
 + (void) runScript:(NSString*)script withTarget:(ATSketchCanvasTarget *)target{
     //for now
-    JSContext *context = [JSContext new];
+    static JSContext *context;
+    static ATSketchCanvas *canvas;
     
-    //console
-    context[@"__ATCOScriptPrint"] = ^(id o){
-        ATCOScriptPrint(o);
-    };
-    NSString *patchConsole = @"var console = {log : function(){var o = [];for(var i = 0; i < arguments.length; ++i)o[i] = arguments[i] ; __ATCOScriptPrint(o.join(','));}};";
+    if(context == nil){
+        context = [JSContext new];
+   
+        //console
+        context[@"__ATCOScriptPrint"] = ^(id o){
+            ATCOScriptPrint(o);
+        };
+
+        //init canvas
+        canvas = [ATSketchCanvas new];
+        
+        //exception
+        [context setExceptionHandler:^(JSContext *context, JSValue *exception) {
+            id exception_ = [exception toObject];
+            NSString *string = [NSString stringWithFormat:@"Uncaught %@: line %@, column %@ \nstack:\n%@",
+                                exception,
+                                @([exception_[@"line"] integerValue] - 1),
+                                exception_[@"column"],
+                                exception[@"stack"]];
+            ATCOScriptPrint(string);
+        }];
+    }
     
-    //canvas
-    ATSketchCanvas *canvas = [ATSketchCanvas canvasWithTarget:target];
+    //reset canvas
+    [canvas resetWithTarget:target];
     context[@"__ATSketchCanvasInstance"] = canvas;
-    
-    //exception
-    [context setExceptionHandler:^(JSContext *context, JSValue *exception) {
-        id exception_ = [exception toObject];
-        NSString *string = [NSString stringWithFormat:@"Uncaught %@: line %@, column %@ \nstack:\n%@",
-                            exception,
-                            @([exception_[@"line"] integerValue] - 1),
-                            exception_[@"column"],
-                            exception[@"stack"]];
-        ATCOScriptPrint(string);
-    }];
-    
-    //build script
+
+    //script begin
     NSMutableString *script_ = [NSMutableString new];
+    
+    //patch console
+    NSString *patchConsole = @"var console = {log : function(){var o = [];for(var i = 0; i < arguments.length; ++i)o[i] = arguments[i] ; __ATCOScriptPrint(o.join(','));}};";
     [script_ appendString:patchConsole];
     [script_ appendString:@"\n"];
+
+    //script end
     [script_ appendString:script];
     
     //run
