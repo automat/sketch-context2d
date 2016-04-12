@@ -101,20 +101,25 @@
 - (instancetype) initWithGroup:(MSLayerGroup *)group{
     self = [super init];
     if(self){
-        _layer = nil;
-        _group = group;
-        _path  = nil;
-        
-        _state           = [NSMutableDictionary dictionaryWithDictionary:[ATSketchContext2d defaultState]];
-        _statePrev       = [NSMutableDictionary dictionaryWithDictionary:[ATSketchContext2d defaultState]];
-        _stateStack      = [NSMutableArray arrayWithObject:[_state copy]];
-        
-        _stylePartStroke = [ATStylePart new];
-        _stylePartFill   = [ATStylePart new];
-        _stylePartShadow = nil;
-        [self applyState:_state];
+        [self resetWithGroup:group];
     }
     return self;
+}
+
+- (void) resetWithGroup:(MSLayerGroup *)group{
+    _layer = nil;
+    _group = group;
+    _path  = nil;
+    
+    _state           = [NSMutableDictionary dictionaryWithDictionary:[ATSketchContext2d defaultState]];
+    _statePrev       = [NSMutableDictionary dictionaryWithDictionary:[ATSketchContext2d defaultState]];
+    _stateStack      = [NSMutableArray arrayWithObject:[_state copy]];
+    
+    _stylePartStroke = [ATStylePart new];
+    _stylePartFill   = [ATStylePart new];
+    _stylePartShadow = nil;
+    [self applyState:_state];
+
 }
 
 + (instancetype) contextWithGroup:(MSLayerGroup *)group{
@@ -140,18 +145,9 @@
 }
 
 - (void) applyState:(NSMutableDictionary*)state{
-    
     //transform
-    NSAffineTransform* transform = [state objectForKey:@"transform"];
-    if(transform){
-        [self setTransform: transform.transformStruct.m11
-                         b: transform.transformStruct.m12
-                         c: transform.transformStruct.m21
-                         d: transform.transformStruct.m22
-                        tx: transform.transformStruct.tX
-                        ty: transform.transformStruct.tY];
-    }
-    
+    [_state setObject:[state[@"transform"] copy] forKey:@"transform"];
+
     //compositing
     [self setGlobalAlpha:[[state objectForKey:@"globalAlpha"] floatValue]];
     [self setGlobalCompositionOperation:[state objectForKey:@"globalCompositionOperation"]];
@@ -401,7 +397,6 @@
     if(transform){
         [_path transformUsingAffineTransform: transform];
     }
-    
     if(!_layer){
         _layer = [MSShapeGroup_Class shapeWithBezierPath:_path];
         [_layer setStyle:_style];

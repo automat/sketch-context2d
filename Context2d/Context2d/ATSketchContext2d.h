@@ -138,7 +138,7 @@ JSExportAs(arc,
 - (instancetype) initWithGroup:(MSLayerGroup*)group;
 + (instancetype) contextWithGroup:(MSLayerGroup*)group;
 
-
+- (void) resetWithGroup:(MSLayerGroup *)group;
 
 - (void)      setFont:(NSString*)font;
 - (NSString*) font;
