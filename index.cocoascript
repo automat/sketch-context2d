@@ -13,16 +13,34 @@ if(!document){
     return;
 }
 
-var page      = document.currentPage();
-var artboard  = page.currentArtboard();
-var selection = context.selection;
-var target    = null;
+var page     = document.currentPage();
+var artboard = page.currentArtboard();
+
+if(!artboard){
+    var msg = 'No artboard selected.';
+    print(msg);
+    document.showMessage_(msg);
+    return;
+}
+
+var selection  = context.selection;
+var target     = null;
+var targetSize = [artboard.frame().size().width,artboard.frame().size().height];
 
 if(selection.count() == 0){
     target = artboard;
 } else {
     var first = selection.firstObject();
-    target = first.class() == MSLayerGroup ? first : artboard;
+    if(first.class() == MSLayerGroup){
+        var size = first.frame().size();
+        if(size.width != 0 || size.height != 0){
+            targetSize[0] = size.width;
+            targetSize[1] = size.height;
+        }
+        target = first;
+    } else {
+        target = artboard;
+    }
 }
 
 if(!target && document.artboards().count() > 0){
@@ -32,7 +50,9 @@ if(!target && document.artboards().count() > 0){
 
 //check render target set
 if(!target){
-    print('No target selected.');
+    var msg = 'No target selected';
+    document.showMessage_(msg);
+    print(msg);
     return;
 }
 
@@ -88,9 +108,14 @@ if(!!__verbose__){
     print('Script start');
 }
 
+//canvas group + initial size
+var canvasTarget = ATSketchCanvasTarget.new();
+canvasTarget.setGroup_(group);
+canvasTarget.setSize_(NSMakeSize(targetSize[0],targetSize[1]));
+
 //run script with context
 ATContext2dJS.setVerbose(!!__verboselog__);
-ATContext2dJS.runScriptAtPath_andTarget(__dirname__ + '/plugin/plugin.js',group);
+ATContext2dJS.runScriptAtPath_withTarget(__dirname__ + '/plugin/plugin.js',canvasTarget);
 
 if(__flatten__){
 }
@@ -108,7 +133,7 @@ if(!!__verbose__){
     }
 
     var duration = new Date(new Date().getTime() - time);
-    print('Script end: ' + pad(duration.getHours(),2) + ':' +
+    print('Script end: ' + pad(Math.max(duration.getHours()-1,0),2) + ':' +
                            pad(duration.getMinutes(),2) + ':' +
                            pad(duration.getSeconds(),2));
 }
