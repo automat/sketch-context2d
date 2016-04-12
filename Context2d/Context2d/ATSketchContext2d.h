@@ -84,10 +84,10 @@ JSExportAs(moveTo,
 JSExportAs(lineTo,
 - (void) lineToX:(CGFloat)x y:(CGFloat) y
 );
-JSExportAs(quadraticCurve,
+JSExportAs(quadraticCurveTo,
 - (void) quadraticCurveToCpx:(CGFloat)cpx cpy:(CGFloat)cpy x:(CGFloat)x y:(CGFloat) y
 );
-JSExportAs(bezierCurve,
+JSExportAs(bezierCurveTo,
 - (void) bezierCurveToCp1x:(CGFloat)cp1x cp1y:(CGFloat)cp1y cp2x:(CGFloat)cp2x cp2y:(CGFloat)cp2y x:(CGFloat)x y:(CGFloat) y
 );
 JSExportAs(rect,
