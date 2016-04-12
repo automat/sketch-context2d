@@ -52,7 +52,10 @@
 @property CGFloat lineWidth;
 @property NSString* lineCap;
 @property CGFloat miterLimit;
-@property NSArray* lineDash;
+
+- (void) setLineDash:(NSArray *)lineDash;
+- (NSArray *) getLineDash;
+
 @property CGFloat lineDashOffset;
 
 #pragma mark - State

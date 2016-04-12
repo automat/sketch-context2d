@@ -356,7 +356,7 @@
     [self setStatePropertyWithKey:@"lineDash" value:array];
 }
 
-- (NSArray *) lineDash{
+- (NSArray *) getLineDash{
     return [[_state objectForKey:@"lineDash"] copy];
 }
 
