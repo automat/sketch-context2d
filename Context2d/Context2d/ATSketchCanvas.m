@@ -10,6 +10,14 @@
 #import "ATCOScriptInterface.h"
 
 @implementation ATSketchCanvas
+- (instancetype) init{
+    self = [super init];
+    if(self){
+          _context = [ATSketchContext2d new];
+    }
+    return self;
+}
+
 - (instancetype) initWithTarget:(ATSketchCanvasTarget *)target{
     self = [super init];
     if(self){
@@ -23,6 +31,13 @@
 
 + (instancetype) canvasWithTarget:(ATSketchCanvasTarget *)target{
     return [[ATSketchCanvas alloc] initWithTarget:target];
+}
+
+- (void) resetWithTarget:(ATSketchCanvasTarget *)target{
+    _group = [target group];
+    [_context resetWithGroup:_group];
+    _targetWidth  = [target size].width;
+    _targetHeight = [target size].height;
 }
 
 - (void) setWidth:(CGFloat)width{

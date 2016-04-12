@@ -25,4 +25,5 @@
 }
 - (instancetype) initWithTarget: (ATSketchCanvasTarget *)target;
 + (instancetype) canvasWithTarget: (ATSketchCanvasTarget *)target;
+- (void) resetWithTarget: (ATSketchCanvasTarget *)target;
 @end
