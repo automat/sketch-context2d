@@ -21,7 +21,7 @@ static BOOL verboseLog = NO;
     verboseLog = verbose;
 }
 
-+ (void) runScript:(NSString*)script andTarget:(MSLayerGroup*)target{
++ (void) runScript:(NSString*)script withTarget:(ATSketchCanvasTarget *)target{
     //for now
     JSContext *context = [JSContext new];
     
@@ -32,7 +32,7 @@ static BOOL verboseLog = NO;
     NSString *patchConsole = @"var console = {log : function(){var o = [];for(var i = 0; i < arguments.length; ++i)o[i] = arguments[i] ; __ATCOScriptPrint(o.join(','));}};";
     
     //canvas
-    ATSketchCanvas *canvas = [ATSketchCanvas canvasWithGroup:target];
+    ATSketchCanvas *canvas = [ATSketchCanvas canvasWithTarget:target];
     context[@"__ATSketchCanvasInstance"] = canvas;
     
     //exception
@@ -56,8 +56,8 @@ static BOOL verboseLog = NO;
     [context evaluateScript:script_];
 }
 
-+ (void) runScriptAtPath:(NSString *)path andTarget:(MSLayerGroup *)target{
++ (void) runScriptAtPath:(NSString *)path withTarget:(ATSketchCanvasTarget *)target{
     NSString *script = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil];
-    [self runScript:script andTarget:target];
+    [self runScript:script withTarget:target];
 }
 @end

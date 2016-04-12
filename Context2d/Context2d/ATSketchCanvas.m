@@ -10,20 +10,19 @@
 #import "ATCOScriptInterface.h"
 
 @implementation ATSketchCanvas
-- (instancetype) initWithGroup:(MSLayerGroup *)group{
+- (instancetype) initWithTarget:(ATSketchCanvasTarget *)target{
     self = [super init];
     if(self){
-        _group = group;
+        _group = [target group];
         _context = [ATSketchContext2d contextWithGroup:_group];
-        _targetWidth  = [[_group frame] width];
-        _targetHeight = [[_group frame] height];
-        ATCOScriptPrint([_group frame]);
+        _targetWidth  = [target size].width;
+        _targetHeight = [target size].height;
     }
     return self;
 }
 
-+ (instancetype) canvasWithGroup:(MSLayerGroup *)group{
-    return [[ATSketchCanvas alloc] initWithGroup:group];
++ (instancetype) canvasWithTarget:(ATSketchCanvasTarget *)target{
+    return [[ATSketchCanvas alloc] initWithTarget:target];
 }
 
 - (void) setWidth:(CGFloat)width{

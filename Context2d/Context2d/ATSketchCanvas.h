@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <JavaScriptCore/JavaScriptCore.h>
+#import "ATSketchCanvasTarget.h"
 #import "ATSketchContext2d.h"
 
 @protocol ATSketchCanvasExports <JSExport>
@@ -22,6 +23,6 @@
     MSLayerGroup *_group;
     ATSketchContext2d *_context;
 }
-- (instancetype) initWithGroup: (MSLayerGroup *)group;
-+ (instancetype) canvasWithGroup: (MSLayerGroup *)group;
+- (instancetype) initWithTarget: (ATSketchCanvasTarget *)target;
++ (instancetype) canvasWithTarget: (ATSketchCanvasTarget *)target;
 @end

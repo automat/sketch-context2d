@@ -16,5 +16,7 @@ FOUNDATION_EXPORT const unsigned char Context2dVersionString[];
 
 // In this header, you should import all the public headers of your framework using statements like #import <Context2d/PublicHeader.h>
 
+#import <Context2d/ATSketchCanvasTarget.h>
 #import <Context2d/ATContext2dJS.h>
+
 

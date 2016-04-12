@@ -7,10 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "ATSketchCanvasTarget.h"
 
-@class MSLayerGroup;
 @interface ATContext2dJS : NSObject
 + (void) setVerbose:(BOOL)verbose;
-+ (void) runScript:(NSString*)script andTarget:(MSLayerGroup*)target;
-+ (void) runScriptAtPath:(NSString *)path andTarget:(MSLayerGroup *)target;
++ (void) runScript:(NSString*)script withTarget:(ATSketchCanvasTarget*) target;
++ (void) runScriptAtPath:(NSString *)path withTarget:(ATSketchCanvasTarget *)target;
 @end
