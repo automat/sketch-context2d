@@ -10,7 +10,6 @@
 #define ATCOScriptInterface_h
 
 #define COScript_Class NSClassFromString(@"COScript")
-@class COScript;
 @interface COScript
 + (instancetype) currentCOScript;
 - (void) print:(id)o;
