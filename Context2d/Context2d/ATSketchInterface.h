@@ -18,7 +18,6 @@
 @end
 
 #define MSArray_Class NSClassFromString(@"MSArray")
-@class MSArray;
 @interface MSArray
 + (id)array;
 + (id)dataArrayWithArray:(id)arg1;
@@ -30,7 +29,6 @@
 - (unsigned long long)count;
 @end
 
-@class MSRect;
 @interface MSRect
 @property(nonatomic) double width;
 @property(nonatomic) double height;
@@ -39,18 +37,16 @@
 #pragma mark - Layers & Groups
 
 #define MSShapeGroup_Class NSClassFromString(@"MSShapeGroup")
-@class MSShapeGroup;
 @interface MSShapeGroup
+@property(nonatomic) unsigned long long windingRule;
 @property(readonly, nonatomic) struct CGRect bounds;
 + (id) shapeWithBezierPath:(NSBezierPath *) path;
 - (void) setStyle:(id)style;
 @end
 
-@class MSLayer;
 @interface MSLayer
 @end
 
-@class MSLayerGroup;
 @interface MSLayerGroup
 //MSLayer
 @property(retain, nonatomic) MSRect *frame;
@@ -60,7 +56,6 @@
 #pragma mark - Color & Style
 
 #define MSColor_Class NSClassFromString(@"MSColor")
-@class MSColor;
 @interface MSColor
 @property(readonly, nonatomic) double alpha;
 - (void) setAlpha:(double)alpha;
@@ -71,7 +66,6 @@
 @class MSImmutableGradient;
 
 #define MSGradientStop_Class NSClassFromString(@"MSGradientStop")
-@class MSGradientStop;
 @interface MSGradientStop
 @property(retain, nonatomic) MSColor *color;
 @property(nonatomic) double position;
@@ -79,7 +73,6 @@
 @end
 
 #define MSGradient_Class NSClassFromString(@"MSGradient")
-@class MSGradient;
 @interface MSGradient : NSObject <NSCopying>
 @property(nonatomic) long long gradientType;
 @property(nonatomic) struct CGPoint to;
@@ -90,20 +83,17 @@
 - (id) initBlankGradient;
 @end
 
-@class MSStyleBorder;
 @interface MSStyleBorder
 @property(nonatomic) double thickness;
 @property(copy, nonatomic) MSColor *color;
 @end
 
-@class MSStyleBorderOptions;
 @interface MSStyleBorderOptions
 @property(nonatomic) unsigned long long lineJoinStyle;
 @property(nonatomic) unsigned long long lineCapStyle;
 @property(copy, nonatomic) NSArray *dashPattern;
 @end
 
-@class MSStyleFill;
 @interface MSStyleFill
 @property(nonatomic) unsigned long long fillType;
 @property(copy, nonatomic) MSColor *color;
@@ -114,7 +104,6 @@
 @property(retain, nonatomic) id gradient;
 @end
 
-@class MSStyleShadow;
 @interface MSStyleShadow
 @property(retain, nonatomic) MSColor *color;
 - (void)setOffsetY:(double)arg1;
@@ -122,26 +111,22 @@
 - (void)setBlurRadius:(double)arg1;
 @end
 
-@class MSBorderStyleCollection;
 @interface MSBorderStyleCollection
 - (MSStyleBorder *) addNewStylePart;
 - (void) removeStylePart:(MSStyleBorder *)stylePart;
 @end
 
-@class MSFillStyleCollection;
 @interface MSFillStyleCollection
 - (MSStyleFill *) addNewStylePart;
 - (void) removeStylePart:(MSStyleFill *)stylePart;
 @end
 
-@class MSShadowStyleCollection;
 @interface MSShadowStyleCollection
 - (MSStyleShadow *) addNewStylePart;
 - (void) removeStylePart:(MSStyleShadow *)stylePart;
 @end
 
 #define MSStyle_Class NSClassFromString(@"MSStyle")
-@class MSStyle;
 @interface MSStyle : NSObject
 @property(retain, nonatomic) MSBorderStyleCollection *borders;
 @property(retain, nonatomic) MSFillStyleCollection *fills;
