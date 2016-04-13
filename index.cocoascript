@@ -58,6 +58,7 @@ if(!target){
 
 //script render target group
 var group;
+var groupIndex = -1;
 if(!__recreate__){
     var contextGroups = [];
 
@@ -93,13 +94,20 @@ if(!__recreate__){
         });
 
         group = contextGroups[0];
+        groupIndex = target.indexOfLayer_(group);
         target.removeLayer(group);
     }
 }
 
 //create/override group
 group = MSLayerGroup.new();
-target.addLayers([group]);
+if(groupIndex == -1){
+    target.addLayers_([group]);
+} else {
+    target.insertLayers_atIndex_([group],groupIndex);
+}
+
+//update timestamp file
 group.setName_(SCRIPT_NAME + '_' + new Date().getTime());
 
 var time;
