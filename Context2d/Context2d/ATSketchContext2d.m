@@ -111,15 +111,15 @@
     _group = group;
     _path  = nil;
     
-    _state           = [NSMutableDictionary dictionaryWithDictionary:[ATSketchContext2d defaultState]];
-    _statePrev       = [NSMutableDictionary dictionaryWithDictionary:[ATSketchContext2d defaultState]];
-    _stateStack      = [NSMutableArray arrayWithObject:[_state copy]];
+    _state      = [NSMutableDictionary dictionaryWithDictionary:[ATSketchContext2d defaultState]];
+    _statePrev  = [NSMutableDictionary dictionaryWithDictionary:[ATSketchContext2d defaultState]];
+    _stateStack = [NSMutableArray arrayWithObject:[_state copy]];
     
     _stylePartStroke = [ATStylePart new];
     _stylePartFill   = [ATStylePart new];
     _stylePartShadow = nil;
+   
     [self applyState:_state];
-
 }
 
 + (instancetype) contextWithGroup:(MSLayerGroup *)group{
@@ -130,31 +130,36 @@
 
 - (void) applyStateStyleParts:(NSMutableDictionary*)state{
     //style, color
-    [self setFillStyle:     [[state objectForKey:@"fillStyle"] copy]];
-    [self setStrokeStyle:   [[state objectForKey:@"strokeStyle"] copy]];
+    [self setFillStyle:     [state objectForKey:@"fillStyle"]];
+    [self setStrokeStyle:   [state objectForKey:@"strokeStyle"]];
     [self setLineWidth:     [[state objectForKey:@"lineWidth"] floatValue]];
-    [self setLineDash:      [[state objectForKey:@"lineDash"] copy]];
+    [self setLineDash:      [state objectForKey:@"lineDash"]];
     [self setLineDashOffset:[[state objectForKey:@"lineDashOffset"] floatValue]];
-    [self setLineCap:       [[state objectForKey:@"lineCap"] copy]];
+    [self setLineCap:       [state objectForKey:@"lineCap"]];
+    [self setLineJoin:      [state objectForKey:@"lineJoin"]];
     
     //shadows
     [self setShadowBlur:   [[state objectForKey:@"shadowBlur"] floatValue]];
     [self setShadowOffsetX:[[state objectForKey:@"shadowOffsetX"] floatValue]];
     [self setShadowOffsetY:[[state objectForKey:@"shadowOffsetY"] floatValue]];
-    [self setShadowColor:  [[state objectForKey:@"shadowColor"] copy]];
+    [self setShadowColor:  [state objectForKey:@"shadowColor"]];
 }
 
 - (void) applyState:(NSMutableDictionary*)state{
+    //style parts
+    [self applyStateStyleParts:state];
+    
     //transform
     [_state setObject:[state[@"transform"] copy] forKey:@"transform"];
 
     //compositing
     [self setGlobalAlpha:[[state objectForKey:@"globalAlpha"] floatValue]];
     [self setGlobalCompositionOperation:[state objectForKey:@"globalCompositionOperation"]];
-    
-    [self applyStateStyleParts:state];
 
     //text
+    [self setFont:        [state objectForKey:@"font"]];
+    [self setTextAlign:   [state objectForKey:@"textAlign"]];
+    [self setTextBaseline:[state objectForKey:@"textBaseline"]];
 }
 
 - (void) save{
@@ -224,7 +229,7 @@
 #pragma mark - Colors and Styles
 
 - (void) setStrokeStyle:(id)strokeStyle{
-    [self setStatePropertyWithKey:@"strokeStyle" value:strokeStyle stylePart:_stylePartStroke];
+    [self setStatePropertyWithKey:@"strokeStyle" value:strokeStyle ? [strokeStyle copy] : @"000000" stylePart:_stylePartStroke];
 }
 
 - (id) strokeStyle{
@@ -232,7 +237,7 @@
 }
 
 - (void) setFillStyle: (id)fillStyle{
-    [self setStatePropertyWithKey:@"fillStyle" value:fillStyle stylePart:_stylePartFill];
+    [self setStatePropertyWithKey:@"fillStyle" value:fillStyle ? [fillStyle copy] : @"000000" stylePart:_stylePartFill];
 }
 
 - (id) fillStyle{
@@ -311,7 +316,7 @@
 }
 
 - (void) setShadowColor:(NSString *)color{
-    [self setStatePropertyWithKey:@"shadowColor" value:color stylePart:_stylePartShadow];
+    [self setStatePropertyWithKey:@"shadowColor" value:color ? [color copy] : @"000000" stylePart:_stylePartShadow];
 }
 
 - (NSString *) shadowColor{
@@ -333,11 +338,19 @@
 }
 
 - (void) setLineCap:(NSString*)lineCap{
-    [self setStatePropertyWithKey:@"lineCap" value:lineCap];
+    [self setStatePropertyWithKey:@"lineCap" value:lineCap ? [lineCap copy] : @"butt"];
 }
 
 - (NSString*) lineCap{
     return [[_state objectForKey:@"lineCap"] copy];
+}
+
+- (void) setLineJoin:(NSString *)lineJoin{
+    [self setStatePropertyWithKey:@"lineJoin" value:lineJoin ? [lineJoin copy] : @"miter"];
+}
+
+- (NSString *) lineJoin{
+    return [[_state objectForKey:@"lineJoin"] copy];
 }
 
 - (void) setMiterLimit:(CGFloat)miterLimit{
@@ -353,7 +366,7 @@
 }
 
 - (void) setLineDash:(NSArray *) array{
-    [self setStatePropertyWithKey:@"lineDash" value:array];
+    [self setStatePropertyWithKey:@"lineDash" value:array ? [array copy] : @{}];
 }
 
 - (NSArray *) getLineDash{
@@ -644,14 +657,15 @@
 
 #pragma mark - Text
 
-
 - (void) setFont:(NSString *)font{
     if(font == [_state objectForKey:@"font"]){
         return;
     }
+ /*
     NSArray *tokens = [font componentsSeparatedByString:@" "];
     NSString *family;
     NSUInteger size;
+  */
    /*
     if([tokens count] < 2){
         font = DefaultFont;
@@ -670,5 +684,40 @@
     return [[_state objectForKey:@"font"] copy];
 }
 
+- (void) setTextAlign:(NSString *)textAlign{
+    if(textAlign == [_state objectForKey:@"textAlign"]){
+        return;
+    }
+    [_state setObject:!([textAlign isEqualToString:@"start"] &&
+                        [textAlign isEqualToString:@"end"] &&
+                        [textAlign isEqualToString:@"left"] &&
+                        [textAlign isEqualToString:@"right"] &&
+                        [textAlign isEqualToString:@"center"]) ?
+                        [textAlign copy] :
+                        @"start"
+               forKey:@"textAlign"];
+}
 
+- (NSString *)textAlign{
+    return [[_state objectForKey:@"textAlign"] copy];
+}
+
+- (void) setTextBaseline:(NSString *)textBaseline{
+    if(textBaseline == [_state objectForKey:@"textBaseline"]){
+        return;
+    }
+    [_state setObject:!([textBaseline isEqualToString:@"top"] &&
+                        [textBaseline isEqualToString:@"hanging"] &&
+                        [textBaseline isEqualToString:@"middle"] &&
+                        [textBaseline isEqualToString:@"alphabetic"] &&
+                        [textBaseline isEqualToString:@"ideographic"] &&
+                        [textBaseline isEqualToString:@"bottom"]) ?
+                        [textBaseline copy] :
+                        @"alphabetic"
+               forKey:@"textBaseline"];
+}
+
+- (NSString *)textBaseline{
+    return [[_state objectForKey:@"textBaseline"] copy];
+}
 @end

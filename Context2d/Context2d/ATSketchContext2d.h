@@ -72,6 +72,7 @@
 - (ATCanvasPattern *) createPattern;
 @property CGFloat lineWidth;
 @property NSString* lineCap;
+@property NSString* lineJoin;
 @property CGFloat miterLimit;
 
 - (void) setLineDash:(NSArray *)lineDash;
@@ -136,7 +137,16 @@ JSExportAs(fill,
 - (void) clip;
 
 #pragma mark - Text
-
+@property (nonatomic) NSString *font;
+@property (nonatomic) NSString *textAlign;
+@property (nonatomic) NSString *textBaseline;
+JSExportAs(fillText,
+- (void) fillText:(NSString*)text x:(CGFloat)x y:(CGFloat)y maxWidth:(CGFloat)maxWidth
+);
+JSExportAs(strokeText,
+- (void) strokeText:(NSString*)text x:(CGFloat)x y:(CGFloat)y maxWidth:(CGFloat)maxWidth
+);
+- (ATTextMetrics *) measureText:(NSString *)text;
 @end
 
 #pragma mark - ATSketchContext2d
@@ -166,14 +176,4 @@ JSExportAs(fill,
 + (instancetype) contextWithGroup:(MSLayerGroup*)group;
 
 - (void) resetWithGroup:(MSLayerGroup *)group;
-
-- (void)      setFont:(NSString*)font;
-- (NSString*) font;
-- (void)      setTextAlign:(NSString*)textAlign;
-- (NSString*) textAlign;
-- (void)      setTextBaseline:(NSString*)textBaseline;
-- (NSString*) textBaseline;
-- (void) fillText:(NSString*)text x:(CGFloat)x y:(CGFloat)y maxWidth:(CGFloat)maxWidth;
-- (void) strokeText:(NSString*)text x:(CGFloat)x y:(CGFloat)y maxWidth:(CGFloat)maxWidth;
-
 @end
