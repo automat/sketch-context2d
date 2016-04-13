@@ -19,15 +19,36 @@
 @end
 
 #pragma mark – ATCanvasGradient
-@interface ATCanvasGradient : NSObject<NSCopying>{
+@protocol ATCanvasGradientExports<JSExport>
+- (void) addColorStop:(CGFloat)offset color:(NSString *)color;
+@end
+
+@interface ATCanvasGradient : NSObject<NSCopying,ATCanvasGradientExports>{
     unsigned long long _numColorStops;
 }
 @property (nonatomic) MSGradient *msgradient;
-- (void) addColorStop:(CGFloat)offset color:(NSString *)color;
 @end
 
 #pragma mark – ATCanvasPattern
 @interface ATCanvasPattern : NSObject<NSCopying>
+@end
+
+#pragma mark - ATTextMetrics
+@protocol ATTextMetricsExports<JSExport>
+@property CGFloat width;
+@end
+
+@interface ATTextMetrics : NSObject<ATTextMetricsExports>
+@end
+
+#pragma mark - ATImageData
+@protocol ATImageDateExports<JSExport>
+@property CGFloat width;
+@property CGFloat height;
+@property (nonatomic,readonly) NSArray* data;
+@end
+
+@interface ATImageData : NSObject<ATTextMetricsExports>
 @end
 
 #pragma mark – ATSketchContext2dExports
