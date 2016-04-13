@@ -61,6 +61,47 @@
 
 #pragma mark - ATSketchContext2d
 
+//state
+//style, color
+static NSString *const kATStateFillStyle   = @"fillStyle";
+static NSString *const kATStateStrokeStyle = @"strokeStyle";
+static NSString *const kATStateTransform   = @"transform";
+//compositing
+static NSString *const kATStateGlobalAlpha = @"globalAlpha";
+static NSString *const kATStateGlobalCompositionOperation = @"globalCompositionOperation";
+//shadows
+static NSString *const kATStateShadowOffsetX = @"shadowOffsetX";
+static NSString *const kATStateShadowOffsetY = @"shadowOffsetY";
+static NSString *const kATStateShadowBlur    = @"shadowBlur";
+static NSString *const kATStateShadowColor   = @"shadowColor";
+//line caps / joins
+static NSString *const kATStateLineWidth      = @"lineWidth";
+static NSString *const kATStateLineCap        = @"lineCap";
+static NSString *const kATStateLineJoin       = @"lineJoin";
+static NSString *const kATStateMiterLimit     = @"miterLimit";
+static NSString *const kATStateLineDash       = @"lineDash";
+static NSString *const kATStateLineDashOffset = @"lineDashOffset";
+//text
+static NSString *const kATStateFont         = @"font";
+static NSString *const kATStateTextAlign    = @"textAlign";
+static NSString *const kATStateTextBaseline = @"textBaseline";
+
+//textalign
+static NSString *const kATTextAlignStart  = @"start";
+static NSString *const kATTextAlignEnd    = @"end";
+static NSString *const kATTextAlignLeft   = @"left";
+static NSString *const kATTextAlignRight  = @"right";
+static NSString *const kATTextAlignCenter = @"center";
+
+//textbaseline
+static NSString *const kATTextBaselineTop         = @"top";
+static NSString *const kATTextBaselineHanging     = @"hanging";
+static NSString *const kATTextBaselineMiddle      = @"middle";
+static NSString *const kATTextBaselineAlphabetic  = @"alphabetic";
+static NSString *const kATTextBaselineIdeographic = @"ideographic";
+static NSString *const kATTextBaselineBottom      = @"bottom";
+
+
 @implementation ATSketchContext2d
 
 #pragma mark - Init
@@ -71,28 +112,28 @@
     dispatch_once(&once,^{
         defaults = @{
                      //style, color
-                     @"fillStyle":  @"black",
-                     @"strokeStyle": @"black",
-                     @"transform":   [NSAffineTransform transform],
+                     kATStateFillStyle:   @"black",
+                     kATStateStrokeStyle: @"black",
+                     kATStateTransform:   [NSAffineTransform transform],
                      //compositing
-                     @"globalAlpha": @1.0,
-                     @"globalCompositionOperation": @"source-over",
+                     kATStateGlobalAlpha: @1.0,
+                     kATStateGlobalCompositionOperation: @"source-over",
                      //shadows
-                     @"shadowOffsetX": @0.0,
-                     @"shadowOffsetY": @0.0,
-                     @"shadowBlur":    @0.0,
-                     @"shadowColor":   @"transparent black",
+                     kATStateShadowOffsetX: @0.0,
+                     kATStateShadowOffsetY: @0.0,
+                     kATStateShadowBlur:    @0.0,
+                     kATStateShadowColor:   @"transparent black",
                      //line caps / joins
-                     @"lineWidth":     @1.0,
-                     @"lineCap":       @"butt",
-                     @"lineJoin":      @"miter",
-                     @"miterLimit":    @10,
-                     @"lineDash":      @[],
-                     @"lineDashOffset": @0,
+                     kATStateLineWidth:     @1.0,
+                     kATStateLineCap:       @"butt",
+                     kATStateLineJoin:      @"miter",
+                     kATStateMiterLimit:     @10,
+                     kATStateLineDash:       @[],
+                     kATStateLineDashOffset: @0,
                      //text
-                     @"font":         @"10px sans-serif",
-                     @"textAlign":    @"start",
-                     @"textBaseline": @"alphabetic"
+                     kATStateFont:         @"10px sans-serif",
+                     kATStateTextAlign:    @"start",
+                     kATStateTextBaseline: @"alphabetic"
                      };
     });
     return defaults;
@@ -130,19 +171,19 @@
 
 - (void) applyStateStyleParts:(NSMutableDictionary*)state{
     //style, color
-    [self setFillStyle:     [state objectForKey:@"fillStyle"]];
-    [self setStrokeStyle:   [state objectForKey:@"strokeStyle"]];
-    [self setLineWidth:     [[state objectForKey:@"lineWidth"] floatValue]];
-    [self setLineDash:      [state objectForKey:@"lineDash"]];
-    [self setLineDashOffset:[[state objectForKey:@"lineDashOffset"] floatValue]];
-    [self setLineCap:       [state objectForKey:@"lineCap"]];
-    [self setLineJoin:      [state objectForKey:@"lineJoin"]];
+    [self setFillStyle:      [state objectForKey:kATStateFillStyle]];
+    [self setStrokeStyle:    [state objectForKey:kATStateStrokeStyle]];
+    [self setLineWidth:     [[state objectForKey:kATStateLineWidth] floatValue]];
+    [self setLineDash:       [state objectForKey:kATStateLineDash]];
+    [self setLineDashOffset:[[state objectForKey:kATStateLineDashOffset] floatValue]];
+    [self setLineCap:        [state objectForKey:kATStateLineCap]];
+    [self setLineJoin:       [state objectForKey:kATStateLineJoin]];
     
     //shadows
-    [self setShadowBlur:   [[state objectForKey:@"shadowBlur"] floatValue]];
-    [self setShadowOffsetX:[[state objectForKey:@"shadowOffsetX"] floatValue]];
-    [self setShadowOffsetY:[[state objectForKey:@"shadowOffsetY"] floatValue]];
-    [self setShadowColor:  [state objectForKey:@"shadowColor"]];
+    [self setShadowBlur:   [[state objectForKey:kATStateShadowBlur] floatValue]];
+    [self setShadowOffsetX:[[state objectForKey:kATStateShadowOffsetX] floatValue]];
+    [self setShadowOffsetY:[[state objectForKey:kATStateShadowOffsetY] floatValue]];
+    [self setShadowColor:   [state objectForKey:kATStateShadowColor]];
 }
 
 - (void) applyState:(NSMutableDictionary*)state{
@@ -150,16 +191,16 @@
     [self applyStateStyleParts:state];
     
     //transform
-    [_state setObject:[state[@"transform"] copy] forKey:@"transform"];
+    [_state setObject:[state[kATStateTransform] copy] forKey:kATStateTransform];
 
     //compositing
-    [self setGlobalAlpha:[[state objectForKey:@"globalAlpha"] floatValue]];
-    [self setGlobalCompositionOperation:[state objectForKey:@"globalCompositionOperation"]];
+    [self setGlobalAlpha:              [[state objectForKey:kATStateGlobalAlpha] floatValue]];
+    [self setGlobalCompositionOperation:[state objectForKey:kATStateGlobalCompositionOperation]];
 
     //text
-    [self setFont:        [state objectForKey:@"font"]];
-    [self setTextAlign:   [state objectForKey:@"textAlign"]];
-    [self setTextBaseline:[state objectForKey:@"textBaseline"]];
+    [self setFont:        [state objectForKey:kATStateFont]];
+    [self setTextAlign:   [state objectForKey:kATStateTextAlign]];
+    [self setTextBaseline:[state objectForKey:kATStateTextBaseline]];
 }
 
 - (void) save{
@@ -190,15 +231,15 @@
 #pragma mark - Transformations
 
 - (void) scaleX:(CGFloat)x y:(CGFloat)y{
-    [[_state objectForKey:@"transform"] scaleXBy:x yBy:y];
+    [[_state objectForKey:kATStateTransform] scaleXBy:x yBy:y];
 }
 
 - (void) rotate:(CGFloat)radians{
-    [[_state objectForKey:@"transfrom"] rotateByRadians:radians];
+    [[_state objectForKey:kATStateTransform] rotateByRadians:radians];
 }
 
 - (void) translateX:(CGFloat)x y:(CGFloat)y{
-    [[_state objectForKey:@"transform"] translateXBy:x yBy:y];
+    [[_state objectForKey:kATStateTransform] translateXBy:x yBy:y];
 }
 
 - (void) transformA:(CGFloat)a b:(CGFloat)b c:(CGFloat)c d:(CGFloat)d tx:(CGFloat)tx ty:(CGFloat)ty{
@@ -211,11 +252,11 @@
     matrix.tX = tx;
     matrix.tY = ty;
     [transform setTransformStruct:matrix];
-    [[_state objectForKey:@"transform"] appendTransform:transform];
+    [[_state objectForKey:kATStateTransform] appendTransform:transform];
 }
 
 - (void) setTransform:(CGFloat)a b:(CGFloat)b c:(CGFloat)c d:(CGFloat)d tx:(CGFloat)tx ty:(CGFloat)ty{
-    NSAffineTransform *transform = [_state objectForKey:@"transform"];
+    NSAffineTransform *transform = [_state objectForKey:kATStateTransform];
     NSAffineTransformStruct matrix = [transform transformStruct];
     matrix.m11 = a;
     matrix.m12 = b;
@@ -266,11 +307,11 @@
 #pragma mark - Compositing
 
 - (void) setGlobalAlpha:(CGFloat)alpha{
-    [self setStatePropertyWithKey:@"globalAlpha" value:[NSNumber numberWithFloat:alpha]];
+    [self setStatePropertyWithKey:kATStateGlobalAlpha value:[NSNumber numberWithFloat:alpha]];
 }
 
 - (CGFloat) globalAlpha{
-    NSNumber *globalAlpha = _state[@"globalAlpha"];
+    NSNumber *globalAlpha = _state[kATStateGlobalAlpha];
     if(!globalAlpha){
         return 1.0;
     }
@@ -282,55 +323,55 @@
     if (!([operation isEqual: @""] || [operation isEqual:@""] || [operation isEqual:@""])) {
         operation = @"source-over";
     }
-    [self setStatePropertyWithKey:@"globalCompositionOperation" value:operation];
+    [self setStatePropertyWithKey:kATStateGlobalCompositionOperation value:operation];
 }
 
 - (NSString*) globalCompositionOperation{
-    return [_state[@"globalCompositionOperation"] copy];
+    return [_state[kATStateGlobalCompositionOperation] copy];
 }
 
 #pragma mark - Shadows
 
 - (void) setShadowOffsetX:(CGFloat)offset{
-    [self setStatePropertyWithKey:@"shadowOffsetX" value:[NSNumber numberWithFloat:offset] stylePart:_stylePartShadow];
+    [self setStatePropertyWithKey:kATStateShadowOffsetX value:[NSNumber numberWithFloat:offset] stylePart:_stylePartShadow];
 }
 
 - (CGFloat) shadowOffsetX{
-    return [[_state objectForKey:@"shadowOffsetX"] floatValue];
+    return [[_state objectForKey:kATStateShadowOffsetX] floatValue];
 }
 
 - (void) setShadowOffsetY:(CGFloat)offset{
-    [self setStatePropertyWithKey:@"shadowOffsetY" value:[NSNumber numberWithFloat:offset] stylePart:_stylePartShadow];
+    [self setStatePropertyWithKey:kATStateShadowOffsetY value:[NSNumber numberWithFloat:offset] stylePart:_stylePartShadow];
 }
 
 - (CGFloat) shadowOffsetY{
-    return [[_state objectForKey:@"shadowOffsetY"] floatValue];
+    return [[_state objectForKey:kATStateShadowOffsetY] floatValue];
 }
 
 - (void) setShadowBlur:(CGFloat)blur{
-    [self setStatePropertyWithKey:@"shadowBlur" value:[NSNumber numberWithFloat:blur] stylePart:_stylePartShadow];
+    [self setStatePropertyWithKey:kATStateShadowBlur value:[NSNumber numberWithFloat:blur] stylePart:_stylePartShadow];
 }
 
 - (CGFloat) shadowBlur{
-    return [[_state objectForKey:@"shadowBlur"] floatValue];
+    return [[_state objectForKey:kATStateShadowBlur] floatValue];
 }
 
 - (void) setShadowColor:(NSString *)color{
-    [self setStatePropertyWithKey:@"shadowColor" value:color ? [color copy] : @"000000" stylePart:_stylePartShadow];
+    [self setStatePropertyWithKey:kATStateShadowColor value:color ? [color copy] : @"000000" stylePart:_stylePartShadow];
 }
 
 - (NSString *) shadowColor{
-    return [_state objectForKey:@"shadowColor"];
+    return [_state objectForKey:kATStateShadowColor];
 }
 
 #pragma mark - Line Cap / Joins
 
 - (void) setLineWidth:(CGFloat)lineWidth{
-    [self setStatePropertyWithKey:@"lineWidth" value:[NSNumber numberWithFloat:lineWidth] stylePart:_stylePartStroke];
+    [self setStatePropertyWithKey:kATStateLineWidth value:[NSNumber numberWithFloat:lineWidth] stylePart:_stylePartStroke];
 }
 
 - (CGFloat) lineWidth{
-    NSNumber *lineWidth = _state[@"lineWidth"];
+    NSNumber *lineWidth = _state[kATStateLineWidth];
     if(!lineWidth){
         return 1.0;
     }
@@ -338,19 +379,19 @@
 }
 
 - (void) setLineCap:(NSString*)lineCap{
-    [self setStatePropertyWithKey:@"lineCap" value:lineCap ? [lineCap copy] : @"butt"];
+    [self setStatePropertyWithKey:kATStateLineCap value:lineCap ? [lineCap copy] : @"butt"];
 }
 
 - (NSString*) lineCap{
-    return [[_state objectForKey:@"lineCap"] copy];
+    return [[_state objectForKey:kATStateLineCap] copy];
 }
 
 - (void) setLineJoin:(NSString *)lineJoin{
-    [self setStatePropertyWithKey:@"lineJoin" value:lineJoin ? [lineJoin copy] : @"miter"];
+    [self setStatePropertyWithKey:kATStateLineJoin value:lineJoin ? [lineJoin copy] : @"miter"];
 }
 
 - (NSString *) lineJoin{
-    return [[_state objectForKey:@"lineJoin"] copy];
+    return [[_state objectForKey:kATStateLineJoin] copy];
 }
 
 - (void) setMiterLimit:(CGFloat)miterLimit{
@@ -366,7 +407,7 @@
 }
 
 - (void) setLineDash:(NSArray *) array{
-    [self setStatePropertyWithKey:@"lineDash" value:array ? [array copy] : @{}];
+    [self setStatePropertyWithKey:kATStateLineDash value:array ? [array copy] : @{}];
 }
 
 - (NSArray *) getLineDash{
@@ -374,11 +415,11 @@
 }
 
 - (void) setLineDashOffset:(CGFloat)offset{
-    [self setStatePropertyWithKey:@"lineDashOffset" value:[NSNumber numberWithFloat:offset]];
+    [self setStatePropertyWithKey:kATStateLineDashOffset value:[NSNumber numberWithFloat:offset]];
 }
 
 - (CGFloat) lineDashOffset{
-    NSNumber *lineDashOffset = _state[@"lineDashOffset"];
+    NSNumber *lineDashOffset = _state[kATStateLineDashOffset];
     if(!lineDashOffset){
         return 0;
     }
@@ -408,7 +449,7 @@
     }
     
     //transform
-    NSAffineTransform *transform = [_state objectForKey:@"transform"];
+    NSAffineTransform *transform = [_state objectForKey:kATStateTransform];
     if(transform){
         [_path transformUsingAffineTransform: transform];
     }
@@ -418,7 +459,7 @@
         [_group addLayers:@[_layer]];
     }
     
-    NSNumber *stateGlobalAlpha = [_state objectForKey:@"globalAlpha"];
+    NSNumber *stateGlobalAlpha = [_state objectForKey:kATStateGlobalAlpha];
     CGFloat globalAlpha = stateGlobalAlpha ? [stateGlobalAlpha floatValue] : 1.0;
     
     //TODO: Move to partial updates, not reinitializations
@@ -442,20 +483,20 @@
             [ref setFillType:1];
         }
         
-        [ref setThickness:[[_state objectForKey:@"lineWidth"] floatValue]];
+        [ref setThickness:[[_state objectForKey:kATStateLineWidth] floatValue]];
         
         //update border options
         MSStyleBorderOptions *options = [_style borderOptions];
         
         //lineCap
-        NSString *lineCap  = [_state objectForKey:@"lineCap"];
+        NSString *lineCap  = [_state objectForKey:kATStateLineCap];
         unsigned long long lineCapStyle = [lineCap isEqualToString:@"round"]  ? 1 :
                                           [lineCap isEqualToString:@"square"] ? 2 :
                                           0; //default: butt
         [options setLineCapStyle:lineCapStyle];
         
         //lineJoin
-        NSString *lineJoin = [_state objectForKey:@"lineJoin"];
+        NSString *lineJoin = [_state objectForKey:kATStateLineJoin];
         unsigned long long lineJoinStyle = [lineJoin isEqualToString:@"round"] ? 1 :
                                            [lineJoin isEqualToString:@"bevel"] ? 2 :
                                            0; //default: miter
@@ -502,16 +543,16 @@
     }
     
     if(shadow){
-        CGFloat offsetX = [[_state objectForKey:@"shadowOffsetX"] floatValue];
-        CGFloat offsetY = [[_state objectForKey:@"shadowOffsetY"] floatValue];
-        CGFloat blur    = [[_state objectForKey:@"shadowBlur"] floatValue];
+        CGFloat offsetX = [[_state objectForKey:kATStateShadowOffsetX] floatValue];
+        CGFloat offsetY = [[_state objectForKey:kATStateShadowOffsetY] floatValue];
+        CGFloat blur    = [[_state objectForKey:kATStateShadowBlur] floatValue];
      
         if(offsetX != 0.0 || offsetY != 0.0 || blur != 0.0){
             id ref = _stylePartShadow.ref = _stylePartShadow.ref ?
                                             _stylePartShadow.ref :
                                             [[_style shadows] addNewStylePart];
         
-            MSColor *color = [MSColor_Class colorWithSVGString:[_state objectForKey:@"shadowColor"]];
+            MSColor *color = [MSColor_Class colorWithSVGString:[_state objectForKey:kATStateShadowColor]];
             [color setAlpha:([color alpha] * globalAlpha)];
             
             [ref setColor:color];
@@ -658,7 +699,7 @@
 #pragma mark - Text
 
 - (void) setFont:(NSString *)font{
-    if(font == [_state objectForKey:@"font"]){
+    if(font == [_state objectForKey:kATStateFont]){
         return;
     }
  /*
@@ -681,43 +722,43 @@
 }
 
 - (NSString*) font{
-    return [[_state objectForKey:@"font"] copy];
+    return [[_state objectForKey:kATStateFont] copy];
 }
 
 - (void) setTextAlign:(NSString *)textAlign{
-    if(textAlign == [_state objectForKey:@"textAlign"]){
+    if(textAlign == [_state objectForKey:kATStateTextAlign]){
         return;
     }
-    [_state setObject:!([textAlign isEqualToString:@"start"] &&
-                        [textAlign isEqualToString:@"end"] &&
-                        [textAlign isEqualToString:@"left"] &&
-                        [textAlign isEqualToString:@"right"] &&
-                        [textAlign isEqualToString:@"center"]) ?
+    [_state setObject:!([textAlign isEqualToString:kATTextAlignStart] &&
+                        [textAlign isEqualToString:kATTextAlignEnd] &&
+                        [textAlign isEqualToString:kATTextAlignLeft] &&
+                        [textAlign isEqualToString:kATTextAlignRight] &&
+                        [textAlign isEqualToString:kATTextAlignCenter]) ?
                         [textAlign copy] :
-                        @"start"
-               forKey:@"textAlign"];
+                        [kATTextAlignStart copy]
+               forKey:kATStateTextAlign];
 }
 
 - (NSString *)textAlign{
-    return [[_state objectForKey:@"textAlign"] copy];
+    return [[_state objectForKey:kATStateTextAlign] copy];
 }
 
 - (void) setTextBaseline:(NSString *)textBaseline{
-    if(textBaseline == [_state objectForKey:@"textBaseline"]){
+    if(textBaseline == [_state objectForKey:kATStateTextBaseline]){
         return;
     }
-    [_state setObject:!([textBaseline isEqualToString:@"top"] &&
-                        [textBaseline isEqualToString:@"hanging"] &&
-                        [textBaseline isEqualToString:@"middle"] &&
-                        [textBaseline isEqualToString:@"alphabetic"] &&
-                        [textBaseline isEqualToString:@"ideographic"] &&
-                        [textBaseline isEqualToString:@"bottom"]) ?
+    [_state setObject:!([textBaseline isEqualToString:kATTextBaselineTop] &&
+                        [textBaseline isEqualToString:kATTextBaselineHanging] &&
+                        [textBaseline isEqualToString:kATTextBaselineMiddle] &&
+                        [textBaseline isEqualToString:kATTextBaselineAlphabetic] &&
+                        [textBaseline isEqualToString:kATTextBaselineIdeographic] &&
+                        [textBaseline isEqualToString:kATTextBaselineBottom]) ?
                         [textBaseline copy] :
-                        @"alphabetic"
-               forKey:@"textBaseline"];
+                        [kATTextBaselineAlphabetic copy]
+               forKey:kATStateTextBaseline];
 }
 
 - (NSString *)textBaseline{
-    return [[_state objectForKey:@"textBaseline"] copy];
+    return [[_state objectForKey:kATStateTextBaseline] copy];
 }
 @end
