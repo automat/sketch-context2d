@@ -109,7 +109,9 @@ JSExportAs(arc,
 - (void) arcAtX:(CGFloat)x y:(CGFloat)y radius:(CGFloat)radius startAngle:(CGFloat)startAngle endAngle:(CGFloat)endAngle anticlockwise:(BOOL)anticlockwise
 );
 - (void) stroke;
-- (void) fill;
+JSExportAs(fill,
+- (void) fillWithWindingRule:(NSString *)rule
+);
 - (void) clip;
 
 #pragma mark - Text
@@ -118,8 +120,9 @@ JSExportAs(arc,
 
 #pragma mark - ATSketchContext2d
 @interface ATSketchContext2d : NSObject<ATSketchContext2dExports>{
-    BOOL _pathDirty;
+    BOOL         _pathDirty;
     unsigned int _pathPaintCount;
+    NSString*    _pathWindingRule;
     NSMutableDictionary *_statePrev;
 }
 

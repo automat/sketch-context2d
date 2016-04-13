@@ -387,6 +387,8 @@
 }
 
 - (void) addPathWithStylePartStroke:(BOOL)stroke fill:(BOOL)fill shadow:(BOOL)shadow{
+    //todo: add style add if path has not been altered, no need to repaint same paths
+    
     //1 element + valid segments
     if ([_path elementCount] < 1 || !_pathDirty) {
         return;
@@ -478,6 +480,12 @@
             [ref setGradient:gradient];
             [ref setFillType:1];
         }
+        
+        unsigned long long windingRule = [_pathWindingRule isEqualToString:@"nonzero"] ? 0 : 1;
+        
+        if ([_layer windingRule] != windingRule) {
+            [_layer setWindingRule:windingRule];
+        }
     }
     
     if(shadow){
@@ -518,6 +526,11 @@
     return scaled;
 }
 
+- (void) markPathChanged{
+    _pathDirty      = YES;
+    _pathPaintCount = 0;
+}
+
 - (void) beginPath{
     _path           = [NSBezierPath bezierPath];
     _pathDirty      = NO;
@@ -551,7 +564,7 @@
         return;
     }
     [_path lineToPoint:NSMakePoint(x, y)];
-    _pathDirty = YES;
+    [self markPathChanged];
 }
 
 - (void) quadraticCurveToCpx:(CGFloat)cpx cpy:(CGFloat)cpy x:(CGFloat)x y:(CGFloat)y{
@@ -560,7 +573,7 @@
     }
     NSPoint cp = NSMakePoint(cpx, cpy);
     [_path curveToPoint:NSMakePoint(x, y) controlPoint1:cp controlPoint2:cp];
-    _pathDirty = YES;
+    [self markPathChanged];
 }
 
 - (void) bezierCurveToCp1x:(CGFloat)cp1x cp1y:(CGFloat)cp1y cp2x:(CGFloat)cp2x cp2y:(CGFloat)cp2y x:(CGFloat)x y:(CGFloat)y{
@@ -568,7 +581,7 @@
         return;
     }
     [_path curveToPoint:NSMakePoint(x,y) controlPoint1:NSMakePoint(cp1x, cp1y) controlPoint2:NSMakePoint(cp2x, cp2y)];
-    _pathDirty = YES;
+    [self markPathChanged];
 }
 
 - (void) rectAtX:(CGFloat)x y:(CGFloat)y width:(CGFloat)width height:(CGFloat)height{
@@ -576,7 +589,7 @@
         return;
     }
     [_path appendBezierPathWithRect:NSMakeRect(x,y,width,height)];
-    _pathDirty = YES;
+    [self markPathChanged];
 }
 
 - (void) fillRectAtX:(CGFloat)x y:(CGFloat)y width:(CGFloat)width height:(CGFloat)height{
@@ -596,7 +609,7 @@
         return;
     }
     [_path appendBezierPathWithArcFromPoint:NSMakePoint(x1, y1) toPoint:NSMakePoint(x2, y2) radius:radius];
-    _pathDirty = YES;
+    [self markPathChanged];
 }
 
 - (void) arcAtX:(CGFloat)x y:(CGFloat)y radius:(CGFloat)radius startAngle:(CGFloat)startAngle endAngle:(CGFloat)endAngle anticlockwise:(BOOL)anticlockwise{
@@ -606,7 +619,7 @@
     startAngle = startAngle * 180.0 / M_PI;
     endAngle   = endAngle   * 180.0 / M_PI;
     [_path appendBezierPathWithArcWithCenter:NSMakePoint(x, y) radius:radius startAngle:startAngle endAngle:endAngle clockwise:anticlockwise];
-    _pathDirty = YES;
+    [self markPathChanged];
 }
 
 - (void) stroke{
@@ -616,10 +629,12 @@
     [self addPathWithStylePartStroke:YES fill:NO shadow:YES];
 }
 
-- (void) fill{
+- (void) fillWithWindingRule:(NSString *)rule{
     if(!_path){
         return;
     }
+    _pathWindingRule = ![rule isEqualToString:@"nonzero"] && ![rule isEqualToString:@"evenodd"] ?
+                        @"nonzero" : rule;
     [self addPathWithStylePartStroke:NO fill:YES shadow:YES];
 }
 
