@@ -86,13 +86,20 @@ static NSString *const kATStateFont         = @"font";
 static NSString *const kATStateTextAlign    = @"textAlign";
 static NSString *const kATStateTextBaseline = @"textBaseline";
 
+//lineCap
+static NSString *const kATLineCapButt   = @"butt";
+static NSString *const kATLineCapRound  = @"round";
+static NSString *const kATLineCapSquare = @"square";
+//lineJoin
+static NSString *const kATLineJoinRound = @"round";
+static NSString *const kATLineJoinBevel = @"bevel";
+static NSString *const kATLineJoinMiter = @"miter";
 //textalign
 static NSString *const kATTextAlignStart  = @"start";
 static NSString *const kATTextAlignEnd    = @"end";
 static NSString *const kATTextAlignLeft   = @"left";
 static NSString *const kATTextAlignRight  = @"right";
 static NSString *const kATTextAlignCenter = @"center";
-
 //textbaseline
 static NSString *const kATTextBaselineTop         = @"top";
 static NSString *const kATTextBaselineHanging     = @"hanging";
@@ -100,6 +107,9 @@ static NSString *const kATTextBaselineMiddle      = @"middle";
 static NSString *const kATTextBaselineAlphabetic  = @"alphabetic";
 static NSString *const kATTextBaselineIdeographic = @"ideographic";
 static NSString *const kATTextBaselineBottom      = @"bottom";
+//winding rule
+static NSString *const kATWindingRuleNonZero = @"nonzero";
+static NSString *const kATWindingRuleEvenOdd = @"evenodd";
 
 
 @implementation ATSketchContext2d
@@ -270,19 +280,23 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 #pragma mark - Colors and Styles
 
 - (void) setStrokeStyle:(id)strokeStyle{
-    [self setStatePropertyWithKey:@"strokeStyle" value:strokeStyle ? [strokeStyle copy] : @"000000" stylePart:_stylePartStroke];
+    [self setStatePropertyWithKey:kATStateStrokeStyle
+                            value:strokeStyle ? [strokeStyle copy] : @"000000"
+                        stylePart:_stylePartStroke];
 }
 
 - (id) strokeStyle{
-    return [_state objectForKey:@"strokeStyle"];
+    return [_state objectForKey:kATStateStrokeStyle];
 }
 
 - (void) setFillStyle: (id)fillStyle{
-    [self setStatePropertyWithKey:@"fillStyle" value:fillStyle ? [fillStyle copy] : @"000000" stylePart:_stylePartFill];
+    [self setStatePropertyWithKey:kATStateFillStyle
+                            value:fillStyle ? [fillStyle copy] : @"000000"
+                        stylePart:_stylePartFill];
 }
 
 - (id) fillStyle{
-    return _state[@"fillStyle"];
+    return _state[kATStateFillStyle];
 }
 
 - (ATCanvasGradient *) createLinearGradientAtX0:(CGFloat)x0 y0:(CGFloat)y0 x1:(CGFloat)x1 y1:(CGFloat)y1{
@@ -333,7 +347,9 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 #pragma mark - Shadows
 
 - (void) setShadowOffsetX:(CGFloat)offset{
-    [self setStatePropertyWithKey:kATStateShadowOffsetX value:[NSNumber numberWithFloat:offset] stylePart:_stylePartShadow];
+    [self setStatePropertyWithKey:kATStateShadowOffsetX
+                            value:[NSNumber numberWithFloat:offset]
+                        stylePart:_stylePartShadow];
 }
 
 - (CGFloat) shadowOffsetX{
@@ -341,7 +357,9 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 }
 
 - (void) setShadowOffsetY:(CGFloat)offset{
-    [self setStatePropertyWithKey:kATStateShadowOffsetY value:[NSNumber numberWithFloat:offset] stylePart:_stylePartShadow];
+    [self setStatePropertyWithKey:kATStateShadowOffsetY
+                            value:[NSNumber numberWithFloat:offset]
+                        stylePart:_stylePartShadow];
 }
 
 - (CGFloat) shadowOffsetY{
@@ -349,7 +367,9 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 }
 
 - (void) setShadowBlur:(CGFloat)blur{
-    [self setStatePropertyWithKey:kATStateShadowBlur value:[NSNumber numberWithFloat:blur] stylePart:_stylePartShadow];
+    [self setStatePropertyWithKey:kATStateShadowBlur
+                            value:[NSNumber numberWithFloat:blur]
+                        stylePart:_stylePartShadow];
 }
 
 - (CGFloat) shadowBlur{
@@ -357,7 +377,9 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 }
 
 - (void) setShadowColor:(NSString *)color{
-    [self setStatePropertyWithKey:kATStateShadowColor value:color ? [color copy] : @"000000" stylePart:_stylePartShadow];
+    [self setStatePropertyWithKey:kATStateShadowColor
+                            value:color ? [color copy] : @"000000"
+                        stylePart:_stylePartShadow];
 }
 
 - (NSString *) shadowColor{
@@ -367,7 +389,9 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 #pragma mark - Line Cap / Joins
 
 - (void) setLineWidth:(CGFloat)lineWidth{
-    [self setStatePropertyWithKey:kATStateLineWidth value:[NSNumber numberWithFloat:lineWidth] stylePart:_stylePartStroke];
+    [self setStatePropertyWithKey:kATStateLineWidth
+                            value:[NSNumber numberWithFloat:lineWidth]
+                        stylePart:_stylePartStroke];
 }
 
 - (CGFloat) lineWidth{
@@ -379,7 +403,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 }
 
 - (void) setLineCap:(NSString*)lineCap{
-    [self setStatePropertyWithKey:kATStateLineCap value:lineCap ? [lineCap copy] : @"butt"];
+    [self setStatePropertyWithKey:kATStateLineCap value:lineCap ? [lineCap copy] : [kATLineCapButt copy]];
 }
 
 - (NSString*) lineCap{
@@ -387,7 +411,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 }
 
 - (void) setLineJoin:(NSString *)lineJoin{
-    [self setStatePropertyWithKey:kATStateLineJoin value:lineJoin ? [lineJoin copy] : @"miter"];
+    [self setStatePropertyWithKey:kATStateLineJoin value:lineJoin ? [lineJoin copy] : [kATLineJoinMiter copy]];
 }
 
 - (NSString *) lineJoin{
@@ -395,11 +419,11 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 }
 
 - (void) setMiterLimit:(CGFloat)miterLimit{
-    [self setStatePropertyWithKey:@"miterLimit" value:[NSNumber numberWithFloat:miterLimit]];
+    [self setStatePropertyWithKey:kATStateMiterLimit value:[NSNumber numberWithFloat:miterLimit]];
 }
 
 - (CGFloat) miterLimit{
-    NSNumber *miterLimit = _state[@"miterLimit"];
+    NSNumber *miterLimit = _state[kATStateMiterLimit];
     if(!miterLimit){
         return 10.0;
     }
@@ -411,7 +435,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 }
 
 - (NSArray *) getLineDash{
-    return [[_state objectForKey:@"lineDash"] copy];
+    return [[_state objectForKey:kATStateLineDash] copy];
 }
 
 - (void) setLineDashOffset:(CGFloat)offset{
@@ -466,7 +490,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     
     // update stroke
     if(stroke && _stylePartStroke.valid){
-        id value = [_state objectForKey:@"strokeStyle"];
+        id value = [_state objectForKey:kATStateStrokeStyle];
         id ref   = _stylePartStroke.ref = (!_stylePartStroke.ref || _pathPaintCount > 0) ?
                                           [[_style borders] addNewStylePart] :
                                           _stylePartStroke.ref;
@@ -490,20 +514,20 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
         
         //lineCap
         NSString *lineCap  = [_state objectForKey:kATStateLineCap];
-        unsigned long long lineCapStyle = [lineCap isEqualToString:@"round"]  ? 1 :
-                                          [lineCap isEqualToString:@"square"] ? 2 :
+        unsigned long long lineCapStyle = [lineCap isEqualToString:kATLineCapRound]  ? 1 :
+                                          [lineCap isEqualToString:kATLineCapSquare] ? 2 :
                                           0; //default: butt
         [options setLineCapStyle:lineCapStyle];
         
         //lineJoin
         NSString *lineJoin = [_state objectForKey:kATStateLineJoin];
-        unsigned long long lineJoinStyle = [lineJoin isEqualToString:@"round"] ? 1 :
-                                           [lineJoin isEqualToString:@"bevel"] ? 2 :
+        unsigned long long lineJoinStyle = [lineJoin isEqualToString:kATLineJoinRound] ? 1 :
+                                           [lineJoin isEqualToString:kATLineJoinBevel] ? 2 :
                                            0; //default: miter
         [options setLineJoinStyle:lineJoinStyle];
     
         //lineDash
-        NSArray *lineDash = [[_state objectForKey:@"lineDash"] copy];
+        NSArray *lineDash = [[_state objectForKey:kATStateLineDash] copy];
         //restrict to sketch just supporting 4 entries
         if(lineDash && [lineDash count] > 4){
             //...
@@ -518,7 +542,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     
     // update fill
     if(fill && _stylePartFill.valid){
-        id value = [_state objectForKey:@"fillStyle"];
+        id value = [_state objectForKey:kATStateFillStyle];
         id ref   = _stylePartFill.ref = (!_stylePartFill.ref || _pathPaintCount > 0) ?
                                         [[_style fills] addNewStylePart] :
                                         _stylePartFill.ref;
@@ -535,7 +559,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
             [ref setFillType:1];
         }
         
-        unsigned long long windingRule = [_pathWindingRule isEqualToString:@"nonzero"] ? 0 : 1;
+        unsigned long long windingRule = [_pathWindingRule isEqualToString:kATWindingRuleNonZero] ? 0 : 1;
         
         if ([_layer windingRule] != windingRule) {
             [_layer setWindingRule:windingRule];
@@ -683,12 +707,15 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     [self addPathWithStylePartStroke:YES fill:NO shadow:YES];
 }
 
+
+
 - (void) fillWithWindingRule:(NSString *)rule{
     if(!_path){
         return;
     }
-    _pathWindingRule = ![rule isEqualToString:@"nonzero"] && ![rule isEqualToString:@"evenodd"] ?
-                        @"nonzero" : rule;
+    _pathWindingRule = ![rule isEqualToString:kATWindingRuleNonZero] && ![rule isEqualToString:kATWindingRuleEvenOdd] ?
+                        kATWindingRuleNonZero :
+                        rule;
     [self addPathWithStylePartStroke:NO fill:YES shadow:YES];
 }
 
