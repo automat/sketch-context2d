@@ -413,9 +413,9 @@
     // update stroke
     if(stroke && _stylePartStroke.valid){
         id value = [_state objectForKey:@"strokeStyle"];
-        id ref   = _stylePartStroke.ref = _stylePartStroke.ref ?
-                                          _stylePartStroke.ref :
-                                          [[_style borders] addNewStylePart];
+        id ref   = _stylePartStroke.ref = (!_stylePartStroke.ref || _pathPaintCount > 0) ?
+                                          [[_style borders] addNewStylePart] :
+                                          _stylePartStroke.ref;
         
         if([value isKindOfClass:[NSString class]]){
             MSColor *color = [MSColor_Class colorWithSVGString:value];
@@ -445,7 +445,7 @@
         NSString *lineJoin = [_state objectForKey:@"lineJoin"];
         unsigned long long lineJoinStyle = [lineJoin isEqualToString:@"round"] ? 1 :
                                            [lineJoin isEqualToString:@"bevel"] ? 2 :
-                                            0; //default: miter
+                                           0; //default: miter
         [options setLineJoinStyle:lineJoinStyle];
     
         //lineDash
@@ -465,9 +465,9 @@
     // update fill
     if(fill && _stylePartFill.valid){
         id value = [_state objectForKey:@"fillStyle"];
-        id ref   = _stylePartFill.ref = _stylePartFill.ref ?
-                                        _stylePartFill.ref :
-                                        [[_style fills] addNewStylePart];
+        id ref   = _stylePartFill.ref = (!_stylePartFill.ref || _pathPaintCount > 0) ?
+                                        [[_style fills] addNewStylePart] :
+                                        _stylePartFill.ref;
         
         if([value isKindOfClass:[NSString class]]){
             MSColor *color = [MSColor_Class colorWithSVGString:value];
