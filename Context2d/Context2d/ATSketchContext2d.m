@@ -10,6 +10,7 @@
 #import "ATSketchContext2d.h"
 #import "ATSketchInterface.h"
 #import "ATCOScriptInterface.h"
+#include <math.h>
 
 #pragma mark - ATStylePart
 
@@ -56,6 +57,16 @@
 @interface ATRGBAColor
 @property (nonatomic) NSString* rgb;
 @property (nonatomic) CGFloat a;
+@end
+
+#pragma mark - ATTextMetrics
+@implementation ATTextMetrics
+- (void) setWidth:(CGFloat)width{
+    _width = width;
+}
+- (CGFloat) width{
+    return _width;
+}
 @end
 
 
@@ -730,7 +741,6 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 }
 
 
-
 - (void) fillWithWindingRule:(NSString *)rule{
     if(!_path){
         return;
@@ -824,16 +834,36 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     [textLayer setFont:_font];
     [textLayer setStringValueWithoutUndo:text];
     [textLayer setTextColor:[self colorWithSVGStringWithGlobalAlpha:[_state objectForKey:kATStateFillStyle]]];
+
+    CGFloat offsetX = 0;
+    CGFloat offsetY = 0;
     
+    NSString *textAlign = [_state objectForKey:kATStateTextAlign];
+    if([textAlign isEqualToString:kATTextAlignCenter]){
+        offsetX = -[[textLayer frame] width] * 0.5;
+    } else if([textAlign isEqualToString:kATTextAlignRight] || [textAlign isEqualToString:kATTextAlignEnd]){
+        offsetX = -[[textLayer frame] width];
+    }
+
     //TODO: Add transform
-    [[textLayer frame] setX:x];
-    [[textLayer frame] setY:y];
+    [[textLayer frame] setX:x + offsetX];
+    [[textLayer frame] setY:y + offsetY];
+    
+    if(!isnan(maxWidth)){
+        //TODO: Add max width here,textLayer => GroupShape => skew, actual usecase?
+    }
 }
 
 - (void) strokeText:(NSString *)text x:(CGFloat)x y:(CGFloat)y maxWidth:(CGFloat)maxWidth{
     if(!text || [text length] == 0){
         return;
     }
+}
+
+- (ATTextMetrics *)measureText:(NSString *)text{
+    ATTextMetrics *metrics = [ATTextMetrics new];
+    
+    return metrics;
 }
 
 @end

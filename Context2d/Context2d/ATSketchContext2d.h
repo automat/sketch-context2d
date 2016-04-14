@@ -35,10 +35,13 @@
 
 #pragma mark - ATTextMetrics
 @protocol ATTextMetricsExports<JSExport>
-@property CGFloat width;
+@property (nonatomic,readonly) CGFloat width;
 @end
 
-@interface ATTextMetrics : NSObject<ATTextMetricsExports>
+@interface ATTextMetrics : NSObject<ATTextMetricsExports>{
+    CGFloat _width;
+}
+- (void) setWidth:(CGFloat)width;
 @end
 
 #pragma mark - ATImageData
