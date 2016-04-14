@@ -68,7 +68,7 @@ static NSString *const kATStateStrokeStyle = @"strokeStyle";
 static NSString *const kATStateTransform   = @"transform";
 //compositing
 static NSString *const kATStateGlobalAlpha = @"globalAlpha";
-static NSString *const kATStateGlobalCompositionOperation = @"globalCompositionOperation";
+static NSString *const kATStateGlobalCompositeOperation = @"globalCompositeOperation";
 //shadows
 static NSString *const kATStateShadowOffsetX = @"shadowOffsetX";
 static NSString *const kATStateShadowOffsetY = @"shadowOffsetY";
@@ -85,6 +85,19 @@ static NSString *const kATStateLineDashOffset = @"lineDashOffset";
 static NSString *const kATStateFont         = @"font";
 static NSString *const kATStateTextAlign    = @"textAlign";
 static NSString *const kATStateTextBaseline = @"textBaseline";
+
+//compositing
+static NSString *const kATGlobalCompositeOperationSourceAtop      = @"source-atop";
+static NSString *const kATGlobalCompositeOperationSourceIn        = @"source-in";
+static NSString *const kATGlobalCompositeOperationSourceOut       = @"source-out";
+static NSString *const kATGlobalCompositeOperationSourceOver      = @"source-over";
+static NSString *const kATGlobalCompositeOperationDestinationAtop = @"destination-atop";
+static NSString *const kATGlobalCompositeOperationDestinationIn   = @"destination-in";
+static NSString *const kATGlobalCompositeOperationDestinationOut  = @"destination-out";
+static NSString *const kATGlobalCompositeOperationDestinationOver = @"destination-over";
+static NSString *const kATGlobalCompositeOperationLighter         = @"lighter";
+static NSString *const kATGlobalCompositeOperationCopy            = @"copy";
+static NSString *const kATGlobalCompositeOperationXor             = @"xor";
 
 //lineCap
 static NSString *const kATLineCapButt   = @"butt";
@@ -128,7 +141,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
                      kATStateTransform:   [NSAffineTransform transform],
                      //compositing
                      kATStateGlobalAlpha: @1.0,
-                     kATStateGlobalCompositionOperation: @"source-over",
+                     kATStateGlobalCompositeOperation: @"source-over",
                      //shadows
                      kATStateShadowOffsetX: @0.0,
                      kATStateShadowOffsetY: @0.0,
@@ -206,7 +219,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 
     //compositing
     [self setGlobalAlpha:              [[state objectForKey:kATStateGlobalAlpha] floatValue]];
-    [self setGlobalCompositionOperation:[state objectForKey:kATStateGlobalCompositionOperation]];
+    [self setGlobalCompositeOperation:[state objectForKey:kATStateGlobalCompositeOperation]];
 
     //text
     [self setFont:        [state objectForKey:kATStateFont]];
@@ -334,15 +347,25 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 }
 
 // (default: "source-over")
-- (void) setGlobalCompositionOperation:(NSString *)operation{
-    if (!([operation isEqual: @""] || [operation isEqual:@""] || [operation isEqual:@""])) {
-        operation = @"source-over";
-    }
-    [self setStatePropertyWithKey:kATStateGlobalCompositionOperation value:operation];
+- (void) setGlobalCompositeOperation:(NSString *)operation{
+    [self setStatePropertyWithKey:kATStateGlobalCompositeOperation
+                            value:!([operation isEqualToString:kATGlobalCompositeOperationSourceAtop] ||
+                                    [operation isEqualToString:kATGlobalCompositeOperationSourceIn] ||
+                                    [operation isEqualToString:kATGlobalCompositeOperationSourceOut] ||
+                                    [operation isEqualToString:kATGlobalCompositeOperationSourceOver] ||
+                                    [operation isEqualToString:kATGlobalCompositeOperationDestinationAtop] ||
+                                    [operation isEqualToString:kATGlobalCompositeOperationDestinationIn] ||
+                                    [operation isEqualToString:kATGlobalCompositeOperationDestinationOut] ||
+                                    [operation isEqualToString:kATGlobalCompositeOperationDestinationOver] ||
+                                    [operation isEqualToString:kATGlobalCompositeOperationLighter] ||
+                                    [operation isEqualToString:kATGlobalCompositeOperationCopy] ||
+                                    [operation isEqualToString:kATGlobalCompositeOperationXor]) ?
+                                   [kATGlobalCompositeOperationSourceOver copy] :
+                                   [operation copy]];
 }
 
-- (NSString*) globalCompositionOperation{
-    return [_state[kATStateGlobalCompositionOperation] copy];
+- (NSString*) globalCompositeOperation{
+    return [_state[kATStateGlobalCompositeOperation] copy];
 }
 
 #pragma mark - Shadows
