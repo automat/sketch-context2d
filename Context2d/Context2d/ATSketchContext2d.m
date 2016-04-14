@@ -7,9 +7,13 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <AppKit/Appkit.h>
+
 #import "ATSketchContext2d.h"
 #import "ATSketchInterface.h"
 #import "ATCOScriptInterface.h"
+
+
 #include <math.h>
 
 #pragma mark - ATStylePart
@@ -66,6 +70,36 @@
 }
 - (CGFloat) width{
     return _width;
+}
+@end
+
+#pragma mark - ATTFontMetrics
+@implementation ATFontMetrics
+- (instancetype) initWithFont:(NSFont *)font{
+    self = [super init];
+    if(self){
+        CGFloat baselineHeight = [font ascender];
+        CGFloat descent = [font descender];
+        CGFloat capHeight = [font capHeight];
+        CGFloat xHeight = [font xHeight];
+        CGFloat defaultLineHeight = [[[NSLayoutManager alloc] init] defaultLineHeightForFont:font];
+        
+        //relative to absolute metrics
+        _defaultLineHeight = defaultLineHeight;
+        _baselineHeight    = baselineHeight;
+        _descentHeight     = defaultLineHeight - descent;
+        _capHeight         = baselineHeight - capHeight;
+        _xHeight           = baselineHeight - xHeight;
+        _capHeightCenter   = baselineHeight - capHeight * 0.5;
+        _xHeightCenter     = baselineHeight - xHeight * 0.5;
+        _italicAngle       = [font italicAngle];
+        _maxAdvancement    = [font maximumAdvancement];
+        _boundingRect      = [font boundingRectForFont];
+    }
+    return self;
+}
++ (instancetype) metricsWithFont:(NSFont *)font{
+    return [[ATFontMetrics alloc] initWithFont:font];
 }
 @end
 
@@ -781,6 +815,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     }
     
     _font = [NSFont fontWithName:strFamily size:size];
+    _fontMetrics = [ATFontMetrics metricsWithFont:_font];
     [_state setObject: [font copy] forKey:kATStateFont];
 }
 
@@ -825,6 +860,35 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     return [[_state objectForKey:kATStateTextBaseline] copy];
 }
 
+//get offset of textlayer based on alignment and basline
+- (CGPoint) offsetTextLayer:(MSTextLayer *)textLayer{
+    CGFloat offsetX = 0;
+    CGFloat offsetY = 0;
+    
+    NSString *textAlign = [_state objectForKey:kATStateTextAlign];
+    if([textAlign isEqualToString:kATTextAlignCenter]){
+        offsetX = -[[textLayer frame] width] * 0.5;
+    } else if([textAlign isEqualToString:kATTextAlignRight] || [textAlign isEqualToString:kATTextAlignEnd]){
+        offsetX = -[[textLayer frame] width];
+    }
+    
+    NSString *textBaseline = [_state objectForKey:kATStateTextBaseline];
+    
+    if([textBaseline isEqualToString:kATTextBaselineHanging]){ //cap-height top
+        offsetY = [_fontMetrics capHeight];
+    } else if([textBaseline isEqualToString:kATTextBaselineMiddle]){ //cap-height center
+        offsetY = [_fontMetrics capHeightCenter];
+    } else if([textBaseline isEqualToString:kATTextBaselineAlphabetic]){ //baseline
+        offsetY = [_fontMetrics baselineHeight];
+    } else if([textBaseline isEqualToString:kATTextBaselineIdeographic]){
+        offsetY = [_fontMetrics baselineHeight];
+    } else if([textBaseline isEqualToString:kATTextBaselineBottom]){ //bottom em square
+        offsetY = [[textLayer frame] height];
+    }
+    
+    return NSMakePoint(offsetX, offsetY * -1.0);
+}
+
 - (void) fillText:(NSString *)text x:(CGFloat)x y:(CGFloat)y maxWidth:(CGFloat)maxWidth{
     if(!text || [text length] == 0){
         return;
@@ -835,19 +899,11 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     [textLayer setStringValueWithoutUndo:text];
     [textLayer setTextColor:[self colorWithSVGStringWithGlobalAlpha:[_state objectForKey:kATStateFillStyle]]];
 
-    CGFloat offsetX = 0;
-    CGFloat offsetY = 0;
+    CGPoint offset = [self offsetTextLayer:textLayer];
     
-    NSString *textAlign = [_state objectForKey:kATStateTextAlign];
-    if([textAlign isEqualToString:kATTextAlignCenter]){
-        offsetX = -[[textLayer frame] width] * 0.5;
-    } else if([textAlign isEqualToString:kATTextAlignRight] || [textAlign isEqualToString:kATTextAlignEnd]){
-        offsetX = -[[textLayer frame] width];
-    }
-
     //TODO: Add transform
-    [[textLayer frame] setX:x + offsetX];
-    [[textLayer frame] setY:y + offsetY];
+    [[textLayer frame] setX:x + offset.x];
+    [[textLayer frame] setY:y + offset.y];
     
     if(!isnan(maxWidth)){
         //TODO: Add max width here,textLayer => GroupShape => skew, actual usecase?

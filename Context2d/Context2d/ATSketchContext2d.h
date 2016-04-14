@@ -44,6 +44,22 @@
 - (void) setWidth:(CGFloat)width;
 @end
 
+#pragma mark - ATFontMetrics
+@interface ATFontMetrics : NSObject
+@property (readonly) CGFloat defaultLineHeight;
+@property (readonly) CGFloat baselineHeight;
+@property (readonly) CGFloat descentHeight;
+@property (readonly) CGFloat capHeight;
+@property (readonly) CGFloat xHeight;
+@property (readonly) CGFloat capHeightCenter;
+@property (readonly) CGFloat xHeightCenter;
+@property (readonly) CGFloat italicAngle;
+@property (readonly) CGSize maxAdvancement;
+@property (readonly) CGRect boundingRect;
+- (instancetype) initWithFont:(NSFont *)font;
++ (instancetype) metricsWithFont:(NSFont *)font;
+@end
+
 #pragma mark - ATImageData
 @protocol ATImageDateExports<JSExport>
 @property CGFloat width;
@@ -160,6 +176,7 @@ JSExportAs(strokeText,
     NSString*    _pathWindingRule;
     //textfont
     NSFont *_font;
+    ATFontMetrics *_fontMetrics;
     
     NSMutableDictionary *_statePrev;
 }
