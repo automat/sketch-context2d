@@ -32,6 +32,8 @@
 @interface MSRect
 @property(nonatomic) double width;
 @property(nonatomic) double height;
+- (void)setY:(double)arg1;
+- (void)setX:(double)arg1;
 @end
 
 #pragma mark - Layers & Groups
@@ -50,7 +52,16 @@
 @interface MSLayerGroup
 //MSLayer
 @property(retain, nonatomic) MSRect *frame;
+- (id) addLayerOfType:(id)arg1;
 - (void) addLayers:(NSArray* )layers;
+@end
+
+@interface MSTextLayer
+//MSLayer
+@property(retain, nonatomic) MSRect *frame;
+- (void)setFont:(id)arg1;
+- (void)setStringValueWithoutUndo:(id)arg1;
+- (void)setTextColor:(id)arg1;
 @end
 
 #pragma mark - Color & Style
