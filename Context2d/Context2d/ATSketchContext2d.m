@@ -94,6 +94,11 @@ static NSString *const kATLineCapSquare = @"square";
 static NSString *const kATLineJoinRound = @"round";
 static NSString *const kATLineJoinBevel = @"bevel";
 static NSString *const kATLineJoinMiter = @"miter";
+//winding rule
+static NSString *const kATWindingRuleNonZero = @"nonzero";
+static NSString *const kATWindingRuleEvenOdd = @"evenodd";
+
+static NSString *const kATDefaultFont = @"10px sans-serif";
 //textalign
 static NSString *const kATTextAlignStart  = @"start";
 static NSString *const kATTextAlignEnd    = @"end";
@@ -107,10 +112,6 @@ static NSString *const kATTextBaselineMiddle      = @"middle";
 static NSString *const kATTextBaselineAlphabetic  = @"alphabetic";
 static NSString *const kATTextBaselineIdeographic = @"ideographic";
 static NSString *const kATTextBaselineBottom      = @"bottom";
-//winding rule
-static NSString *const kATWindingRuleNonZero = @"nonzero";
-static NSString *const kATWindingRuleEvenOdd = @"evenodd";
-
 
 @implementation ATSketchContext2d
 
@@ -135,15 +136,15 @@ static NSString *const kATWindingRuleEvenOdd = @"evenodd";
                      kATStateShadowColor:   @"transparent black",
                      //line caps / joins
                      kATStateLineWidth:     @1.0,
-                     kATStateLineCap:       @"butt",
-                     kATStateLineJoin:      @"miter",
+                     kATStateLineCap:       [kATLineCapButt copy],
+                     kATStateLineJoin:      [kATLineJoinMiter copy],
                      kATStateMiterLimit:     @10,
                      kATStateLineDash:       @[],
                      kATStateLineDashOffset: @0,
                      //text
-                     kATStateFont:         @"10px sans-serif",
-                     kATStateTextAlign:    @"start",
-                     kATStateTextBaseline: @"alphabetic"
+                     kATStateFont:         [kATDefaultFont copy],
+                     kATStateTextAlign:    [kATTextAlignLeft copy],
+                     kATStateTextBaseline: [kATTextBaselineAlphabetic copy]
                      };
     });
     return defaults;
@@ -464,6 +465,15 @@ static NSString *const kATWindingRuleEvenOdd = @"evenodd";
     return false;
 }
 
+- (MSColor*)colorWithSVGStringWithGlobalAlpha:(NSString *)value{
+    NSNumber *stateGlobalAlpha = [_state objectForKey:kATStateGlobalAlpha];
+    CGFloat globalAlpha = stateGlobalAlpha ? [stateGlobalAlpha floatValue] : 1.0;
+    
+    MSColor *color = [MSColor_Class colorWithSVGString:value];
+    [color setAlpha:([color alpha] * globalAlpha)];
+    return color;
+}
+
 - (void) addPathWithStylePartStroke:(BOOL)stroke fill:(BOOL)fill shadow:(BOOL)shadow{
     //todo: add style add if path has not been altered, no need to repaint same paths
     
@@ -482,10 +492,6 @@ static NSString *const kATWindingRuleEvenOdd = @"evenodd";
         [_layer setStyle:_style];
         [_group addLayers:@[_layer]];
     }
-    
-    NSNumber *stateGlobalAlpha = [_state objectForKey:kATStateGlobalAlpha];
-    CGFloat globalAlpha = stateGlobalAlpha ? [stateGlobalAlpha floatValue] : 1.0;
-    
     //TODO: Move to partial updates, not reinitializations
     
     // update stroke
@@ -496,9 +502,7 @@ static NSString *const kATWindingRuleEvenOdd = @"evenodd";
                                           _stylePartStroke.ref;
         
         if([value isKindOfClass:[NSString class]]){
-            MSColor *color = [MSColor_Class colorWithSVGString:value];
-            [color setAlpha:([color alpha] * globalAlpha)];
-            [ref setColor:color];
+            [ref setColor: [self colorWithSVGStringWithGlobalAlpha:value]];
             [ref setFillType:0];
             
         } else if([value isKindOfClass:[ATCanvasGradient class]]){
@@ -548,9 +552,7 @@ static NSString *const kATWindingRuleEvenOdd = @"evenodd";
                                         _stylePartFill.ref;
         
         if([value isKindOfClass:[NSString class]]){
-            MSColor *color = [MSColor_Class colorWithSVGString:value];
-            [color setAlpha:([color alpha] * globalAlpha)];
-            [ref setColor:color];
+            [ref setColor: [self colorWithSVGStringWithGlobalAlpha:value]];
             [ref setFillType:0];
             
         } else if([value isKindOfClass:[ATCanvasGradient class]]){
@@ -566,6 +568,7 @@ static NSString *const kATWindingRuleEvenOdd = @"evenodd";
         }
     }
     
+    //update shadow
     if(shadow){
         CGFloat offsetX = [[_state objectForKey:kATStateShadowOffsetX] floatValue];
         CGFloat offsetY = [[_state objectForKey:kATStateShadowOffsetY] floatValue];
@@ -575,11 +578,7 @@ static NSString *const kATWindingRuleEvenOdd = @"evenodd";
             id ref = _stylePartShadow.ref = _stylePartShadow.ref ?
                                             _stylePartShadow.ref :
                                             [[_style shadows] addNewStylePart];
-        
-            MSColor *color = [MSColor_Class colorWithSVGString:[_state objectForKey:kATStateShadowColor]];
-            [color setAlpha:([color alpha] * globalAlpha)];
-            
-            [ref setColor:color];
+            [ref setColor: [self colorWithSVGStringWithGlobalAlpha:[_state objectForKey:kATStateShadowColor]]];
             [ref setOffsetX:offsetX];
             [ref setOffsetY:offsetY];
             [ref setBlurRadius:blur];
@@ -729,23 +728,27 @@ static NSString *const kATWindingRuleEvenOdd = @"evenodd";
     if(font == [_state objectForKey:kATStateFont]){
         return;
     }
- /*
-    NSArray *tokens = [font componentsSeparatedByString:@" "];
-    NSString *family;
-    NSUInteger size;
-  */
-   /*
-    if([tokens count] < 2){
-        font = DefaultFont;
-        tokens = [font componentsSeparatedByString:@" "];
-        size   = [tokens[1] unsignedIntegerValue];
-    } else {
-        if([tokens[0] rangeOfString:@"px"].location == NSNotFound){
-            font = DefaultFont;
-            tokens = [font componentsSeparatedByString:@" "];
-        }
+
+    NSArray  *tokens = [font componentsSeparatedByString:@" "];
+    NSString *strFamily;
+    NSString *strSize;
+    CGFloat  size;
+  
+    if([tokens count] < 2 || [tokens[0] rangeOfString:@"px"].location == NSNotFound){
+        font    = [kATDefaultFont copy];
+        tokens  = [font componentsSeparatedByString:@" "];
     }
-    */
+    
+    strSize   = tokens[0];
+    size      = [[strSize substringWithRange:NSMakeRange(0, [strSize length] - 2)] floatValue];
+    strFamily = tokens[1];
+    
+    if([strFamily isEqualToString:@"sans-serif"]){
+        strFamily = @"Arial";
+    }
+    
+    _font = [NSFont fontWithName:strFamily size:size];
+    [_state setObject: [font copy] forKey:kATStateFont];
 }
 
 - (NSString*) font{
@@ -788,4 +791,26 @@ static NSString *const kATWindingRuleEvenOdd = @"evenodd";
 - (NSString *)textBaseline{
     return [[_state objectForKey:kATStateTextBaseline] copy];
 }
+
+- (void) fillText:(NSString *)text x:(CGFloat)x y:(CGFloat)y maxWidth:(CGFloat)maxWidth{
+    if(!text || [text length] == 0){
+        return;
+    }
+    
+    MSTextLayer* textLayer = [_group addLayerOfType:@"text"];
+    [textLayer setFont:_font];
+    [textLayer setStringValueWithoutUndo:text];
+    [textLayer setTextColor:[self colorWithSVGStringWithGlobalAlpha:[_state objectForKey:kATStateFillStyle]]];
+    
+    //TODO: Add transform
+    [[textLayer frame] setX:x];
+    [[textLayer frame] setY:y];
+}
+
+- (void) strokeText:(NSString *)text x:(CGFloat)x y:(CGFloat)y maxWidth:(CGFloat)maxWidth{
+    if(!text || [text length] == 0){
+        return;
+    }
+}
+
 @end

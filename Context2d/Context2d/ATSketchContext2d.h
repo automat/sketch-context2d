@@ -151,9 +151,13 @@ JSExportAs(strokeText,
 
 #pragma mark - ATSketchContext2d
 @interface ATSketchContext2d : NSObject<ATSketchContext2dExports>{
+    //path state
     BOOL         _pathDirty;
     unsigned int _pathPaintCount;
     NSString*    _pathWindingRule;
+    //textfont
+    NSFont *_font;
+    
     NSMutableDictionary *_statePrev;
 }
 
