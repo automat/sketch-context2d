@@ -56,7 +56,7 @@
 
 #pragma mark - Compositing
 @property CGFloat globalAlpha;
-@property NSString *globalCompositionOperation;
+@property NSString *globalCompositeOperation;
 
 #pragma mark - Shadow
 @property NSString *shadowColor;
