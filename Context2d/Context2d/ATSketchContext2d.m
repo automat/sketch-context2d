@@ -107,6 +107,7 @@
 #pragma mark - ATSketchContext2d
 
 //state
+static NSString *const kATStateGroup = @"group";
 //style, color
 static NSString *const kATStateFillStyle   = @"fillStyle";
 static NSString *const kATStateStrokeStyle = @"strokeStyle";
@@ -143,6 +144,21 @@ static NSString *const kATGlobalCompositeOperationDestinationOver = @"destinatio
 static NSString *const kATGlobalCompositeOperationLighter         = @"lighter";
 static NSString *const kATGlobalCompositeOperationCopy            = @"copy";
 static NSString *const kATGlobalCompositeOperationXor             = @"xor";
+static NSString *const kATGlobalCompositeOperationMultiply        = @"multiply";
+static NSString *const kATGlobalCompositeOperationScreen          = @"screen";
+static NSString *const kATGlobalCompositeOperationOverlay         = @"overlay";
+static NSString *const kATGlobalCompositeOperationDarken          = @"darken";
+static NSString *const kATGlobalCompositeOperationLighten         = @"lighten";
+static NSString *const kATGlobalCompositeOperationColorDodge      = @"color-dodge";
+static NSString *const kATGlobalCompositeOperationColorBurn       = @"color-burn";
+static NSString *const kATGlobalCompositeOperationHardLight       = @"hard-light";
+static NSString *const kATGlobalCompositeOperationSoftLight       = @"soft-light";
+static NSString *const kATGlobalCompositeOperationDifference      = @"difference";
+static NSString *const kATGlobalCompositeOperationExclusion       = @"exclusion";
+static NSString *const kATGlobalCompositeOperationHue             = @"hue";
+static NSString *const kATGlobalCompositeOperationSaturation      = @"saturation";
+static NSString *const kATGlobalCompositeOperationColor           = @"color";
+static NSString *const kATGlobalCompositeOperationLuminosity      = @"luminosity";
 
 //lineCap
 static NSString *const kATLineCapButt   = @"butt";
@@ -180,6 +196,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     static dispatch_once_t once;
     dispatch_once(&once,^{
         defaults = @{
+                     kATStateGroup: [NSNull null],
                      //style, color
                      kATStateFillStyle:   @"black",
                      kATStateStrokeStyle: @"black",
@@ -221,6 +238,8 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     _group = group;
     _path  = nil;
     
+    [_group resizeToFitChildrenWithOption:1];
+    
     _state      = [NSMutableDictionary dictionaryWithDictionary:[ATSketchContext2d defaultState]];
     _statePrev  = [NSMutableDictionary dictionaryWithDictionary:[ATSketchContext2d defaultState]];
     _stateStack = [NSMutableArray arrayWithObject:[_state copy]];
@@ -228,7 +247,10 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     _stylePartStroke = [ATStylePart new];
     _stylePartFill   = [ATStylePart new];
     _stylePartShadow = nil;
-   
+    
+    _target = _group;
+    [_state setObject:_target forKey:kATStateGroup];
+    
     [self applyState:_state];
 }
 
@@ -256,6 +278,8 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 }
 
 - (void) applyState:(NSMutableDictionary*)state{
+    _target = [state objectForKey:kATStateGroup];
+    
     //style parts
     [self applyStateStyleParts:state];
     
@@ -542,6 +566,11 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     return color;
 }
 
+- (void) updateGroupBounds{
+    //FIXME: this alters layer positions
+    //[_group resizeToFitChildrenWithOption:0];
+}
+
 - (void) addPathWithStylePartStroke:(BOOL)stroke fill:(BOOL)fill shadow:(BOOL)shadow{
     //todo: add style add if path has not been altered, no need to repaint same paths
     
@@ -549,7 +578,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     if ([_path elementCount] < 1 || !_pathDirty) {
         return;
     }
-    
+
     //transform
     NSAffineTransform *transform = [_state objectForKey:kATStateTransform];
     if(transform){
@@ -558,7 +587,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     if(!_layer){
         _layer = [MSShapeGroup_Class shapeWithBezierPath:_path];
         [_layer setStyle:_style];
-        [_group addLayers:@[_layer]];
+        [_target addLayers:@[_layer]];
     }
     //TODO: Move to partial updates, not reinitializations
     
@@ -653,6 +682,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
         }
     }
     
+    [self updateGroupBounds];
     _pathPaintCount++;
 }
 
@@ -785,8 +815,16 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     [self addPathWithStylePartStroke:NO fill:YES shadow:YES];
 }
 
-- (void) clip{
+- (void) clipWithWindingRule:(NSString *)rule{
+    //rule not supported
+    [MSMaskWithShape_Class toggleMaskForSingleShape:_layer];
+
+    MSLayerGroup *group = [MSLayerGroup_Class new];
+    [_target removeLayer:_layer];
+    [group addLayers:@[_layer]];
+    [_target addLayers:@[group]];
     
+    _target = group;
 }
 
 #pragma mark - Text
@@ -889,31 +927,51 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     return NSMakePoint(offsetX, offsetY * -1.0);
 }
 
-- (void) fillText:(NSString *)text x:(CGFloat)x y:(CGFloat)y maxWidth:(CGFloat)maxWidth{
-    if(!text || [text length] == 0){
-        return;
-    }
-    
-    MSTextLayer* textLayer = [_group addLayerOfType:@"text"];
+- (MSTextLayer *)textLayerWithText:(NSString *)text atX:(CGFloat)x y:(CGFloat)y{
+    MSTextLayer* textLayer = [_target addLayerOfType:@"text"];
     [textLayer setFont:_font];
     [textLayer setStringValueWithoutUndo:text];
-    [textLayer setTextColor:[self colorWithSVGStringWithGlobalAlpha:[_state objectForKey:kATStateFillStyle]]];
+    [textLayer setName:text];
 
     CGPoint offset = [self offsetTextLayer:textLayer];
     
     //TODO: Add transform
     [[textLayer frame] setX:x + offset.x];
     [[textLayer frame] setY:y + offset.y];
+
+    return textLayer;
+}
+
+- (void) fillText:(NSString *)text x:(CGFloat)x y:(CGFloat)y maxWidth:(CGFloat)maxWidth{
+    if(!text || [text length] == 0){
+        return;
+    }
     
+    MSTextLayer *textLayer = [self textLayerWithText:text atX:x y:y];
+    [textLayer setTextColor:[self colorWithSVGStringWithGlobalAlpha:[_state objectForKey:kATStateFillStyle]]];
+
     if(!isnan(maxWidth)){
         //TODO: Add max width here,textLayer => GroupShape => skew, actual usecase?
     }
+    
+    [self updateGroupBounds];
 }
 
 - (void) strokeText:(NSString *)text x:(CGFloat)x y:(CGFloat)y maxWidth:(CGFloat)maxWidth{
     if(!text || [text length] == 0){
         return;
     }
+    
+    MSTextLayer *textLayer = [self textLayerWithText:text atX:x y:y];
+    MSColor *color = [MSColor_Class colorWithSVGString:@"#ffffff"];
+    [color setAlpha:0.0];
+    [textLayer setTextColor:color];
+    
+    if(!isnan(maxWidth)){
+        //TODO: Add max width here,textLayer => GroupShape => skew, actual usecase?
+    }
+    
+    [self updateGroupBounds];
 }
 
 - (ATTextMetrics *)measureText:(NSString *)text{

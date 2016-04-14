@@ -38,6 +38,15 @@
 
 #pragma mark - Layers & Groups
 
+#define MSMaskWithShape_Class NSClassFromString(@"MSMaskWithShape")
+@interface MSMaskWithShape
++ (id)nameForMaskWithLayers:(id)arg1;
++ (id)createMaskWithShapeFromMultipleLayers:(id)arg1;
++ (id)toggleMaskForSingleShape:(id)arg1;
++ (id)createMaskForSingleBitmap:(id)arg1;
++ (id)createMaskWithShapeForLayers:(id)arg1;
+@end
+
 #define MSShapeGroup_Class NSClassFromString(@"MSShapeGroup")
 @interface MSShapeGroup
 @property(nonatomic) unsigned long long windingRule;
@@ -47,18 +56,21 @@
 @end
 
 @interface MSLayer
+@property(retain, nonatomic) MSRect *frame;
+- (void)setName:(id)arg1;
 @end
 
-@interface MSLayerGroup
+#define MSLayerGroup_Class NSClassFromString(@"MSLayerGroup")
+@interface MSLayerGroup : NSObject
 //MSLayer
 @property(retain, nonatomic) MSRect *frame;
 - (id) addLayerOfType:(id)arg1;
 - (void) addLayers:(NSArray* )layers;
+- (BOOL)resizeToFitChildrenWithOption:(long long)arg1;
+- (void)removeLayer:(id)arg1;
 @end
 
-@interface MSTextLayer
-//MSLayer
-@property(retain, nonatomic) MSRect *frame;
+@interface MSTextLayer : MSLayer
 - (void)setFont:(id)arg1;
 - (void)setStringValueWithoutUndo:(id)arg1;
 - (void)setTextColor:(id)arg1;

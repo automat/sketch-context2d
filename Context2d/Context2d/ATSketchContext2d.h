@@ -153,7 +153,10 @@ JSExportAs(arc,
 JSExportAs(fill,
 - (void) fillWithWindingRule:(NSString *)rule
 );
-- (void) clip;
+JSExportAs(clip,
+- (void) clipWithWindingRule:(NSString *)rule
+);
+
 
 #pragma mark - Text
 @property (nonatomic) NSString *font;
@@ -170,6 +173,7 @@ JSExportAs(strokeText,
 
 #pragma mark - ATSketchContext2d
 @interface ATSketchContext2d : NSObject<ATSketchContext2dExports>{
+    id _target;
     //path state
     BOOL         _pathDirty;
     unsigned int _pathPaintCount;
