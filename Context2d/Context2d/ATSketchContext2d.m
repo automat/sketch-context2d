@@ -918,7 +918,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 
 - (ATTextMetrics *)measureText:(NSString *)text{
     ATTextMetrics *metrics = [ATTextMetrics new];
-    
+    [metrics setWidth: [text sizeWithAttributes:[NSDictionary dictionaryWithObjectsAndKeys:_font,NSFontAttributeName,nil]].width];
     return metrics;
 }
 
