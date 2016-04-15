@@ -918,11 +918,13 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     CGFloat offsetX = 0;
     CGFloat offsetY = 0;
     
+    CGFloat width = [self measureText_internal:[textLayer stringValue]];
+    
     NSString *textAlign = [_state objectForKey:kATStateTextAlign];
     if([textAlign isEqualToString:kATTextAlignCenter]){
-        offsetX = -[[textLayer frame] width] * 0.5;
+        offsetX = -width * 0.5;
     } else if([textAlign isEqualToString:kATTextAlignRight] || [textAlign isEqualToString:kATTextAlignEnd]){
-        offsetX = -[[textLayer frame] width];
+        offsetX = -width;
     }
     
     NSString *textBaseline = [_state objectForKey:kATStateTextBaseline];
@@ -949,7 +951,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     [textLayer setName:text];
 
     CGPoint offset = [self offsetTextLayer:textLayer];
-    
+
     //TODO: Add transform
     [[textLayer frame] setX:x + offset.x];
     [[textLayer frame] setY:y + offset.y];
@@ -991,9 +993,13 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     [self updateGroupBounds];
 }
 
+- (CGFloat) measureText_internal:(NSString *)text{
+    return [text sizeWithAttributes:[NSDictionary dictionaryWithObjectsAndKeys:_font,NSFontAttributeName,nil]].width;
+}
+
 - (ATTextMetrics *)measureText:(NSString *)text{
     ATTextMetrics *metrics = [ATTextMetrics new];
-    [metrics setWidth: [text sizeWithAttributes:[NSDictionary dictionaryWithObjectsAndKeys:_font,NSFontAttributeName,nil]].width];
+    [metrics setWidth: [self measureText_internal:text]];
     return metrics;
 }
 

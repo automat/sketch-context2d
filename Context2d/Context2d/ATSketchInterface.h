@@ -75,7 +75,9 @@
 - (void)setFont:(id)arg1;
 - (void)setStringValueWithoutUndo:(id)arg1;
 - (void)setTextColor:(id)arg1;
+- (struct CGSize)textContainerSize;
 @property(readonly, nonatomic) NSBezierPath *bezierPath;
+@property(copy, nonatomic) NSString *stringValue;
 @end
 
 #pragma mark - Color & Style
