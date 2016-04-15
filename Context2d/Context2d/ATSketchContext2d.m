@@ -171,8 +171,14 @@ static NSString *const kATLineJoinMiter = @"miter";
 //winding rule
 static NSString *const kATWindingRuleNonZero = @"nonzero";
 static NSString *const kATWindingRuleEvenOdd = @"evenodd";
-
+//font
 static NSString *const kATDefaultFont = @"10px sans-serif";
+static NSString *const kATFontSerif     = @"serif";
+static NSString *const kATFontSansSerif = @"sans-serif";
+static NSString *const kATFontMonospace = @"monospace";
+static NSString *const kATFontSerifFont     = @"Times";
+static NSString *const kATFontSansSerifFont = @"Helvetica";
+static NSString *const kATFontMonospaceFont = @"Courier";
 //textalign
 static NSString *const kATTextAlignStart  = @"start";
 static NSString *const kATTextAlignEnd    = @"end";
@@ -854,6 +860,9 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 
 #pragma mark - Text
 
+
+
+
 - (void) setFont:(NSString *)font{
     if(font == [_state objectForKey:kATStateFont]){
         return;
@@ -871,12 +880,13 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     
     strSize   = tokens[0];
     size      = [[strSize substringWithRange:NSMakeRange(0, [strSize length] - 2)] floatValue];
+    
     strFamily = tokens[1];
-    
-    if([strFamily isEqualToString:@"sans-serif"]){
-        strFamily = @"Arial";
-    }
-    
+    strFamily = [strFamily isEqualToString:kATFontSansSerif] ? kATFontSansSerifFont :
+                [strFamily isEqualToString:kATFontSerif]     ? kATFontSerifFont :
+                [strFamily isEqualToString:kATFontMonospace] ? kATFontMonospaceFont :
+                strFamily;
+
     _font = [NSFont fontWithName:strFamily size:size];
     _fontMetrics = [ATFontMetrics metricsWithFont:_font];
     [_state setObject: [font copy] forKey:kATStateFont];
