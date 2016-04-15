@@ -35,6 +35,10 @@
 }
 
 - (void) addColorStop:(CGFloat)offset color:(NSString *)color{
+    if([_msgradient gradientType] == 1){
+        offset = 1.0 - offset;
+    }
+    
     MSColor *color_ = [MSColor_Class colorWithSVGString:color];
     if(_numColorStops++ < 2){
         MSGradientStop* stop = [_msgradient stopAtIndex:(_numColorStops-1)];
@@ -412,9 +416,10 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     ATCanvasGradient *gradient = [ATCanvasGradient new];
     MSGradient *msgradient = [gradient msgradient];
     [msgradient setGradientType:1];
-    [msgradient setFrom:CGPointMake(x0, y0)];
+
+    [msgradient setFrom:CGPointMake(x0, y0 + fabs(r1 - r0))];
     [msgradient setTo:CGPointMake(x1, y1)];
-    [msgradient setElipseLength:r0];
+    [msgradient setElipseLength:1.0];
     return gradient;
 }
 

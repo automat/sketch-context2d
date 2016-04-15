@@ -92,7 +92,7 @@ Depends on font information:
 ---
 
 ###[o] 17-createRadialGradient
-- outer / inner radius set doesnt work
+- currently only works if outer/inner radius have same origin
 
 ---
 
