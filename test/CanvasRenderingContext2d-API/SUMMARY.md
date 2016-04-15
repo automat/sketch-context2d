@@ -28,6 +28,7 @@
 ##[x] 09-setLineDash
 
 ##[_] 10-lineDashOffset
+- not supported
 
 ##[x] 11-font
 
