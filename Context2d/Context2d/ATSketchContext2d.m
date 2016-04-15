@@ -739,8 +739,8 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 }
 
 - (void) moveToX:(CGFloat)x y:(CGFloat)y{
-    if(!_path){
-        return;
+    if(!_path || _pathPaintCount > 0){ //can skip beginPath
+        [self beginPath];
     }
     [_path moveToPoint:NSMakePoint(x, y)];
 }
@@ -771,8 +771,8 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 }
 
 - (void) rectAtX:(CGFloat)x y:(CGFloat)y width:(CGFloat)width height:(CGFloat)height{
-    if (!_path) {
-        return;
+    if(!_path || _pathPaintCount > 0){ //can skip beginPath
+        [self beginPath];
     }
     [_path appendBezierPathWithRect:NSMakeRect(x,y,width,height)];
     [self markPathChanged];
@@ -798,9 +798,11 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     [self markPathChanged];
 }
 
-- (void) arcAtX:(CGFloat)x y:(CGFloat)y radius:(CGFloat)radius startAngle:(CGFloat)startAngle endAngle:(CGFloat)endAngle anticlockwise:(BOOL)anticlockwise{
-    if(!_path){
-        return;
+- (void) arcAtX:(CGFloat)x y:(CGFloat)y radius:(CGFloat)radius
+     startAngle:(CGFloat)startAngle endAngle:(CGFloat)endAngle
+  anticlockwise:(BOOL)anticlockwise{
+    if(!_path || _pathPaintCount > 0){ //can skip beginPath
+        [self beginPath];
     }
     startAngle = startAngle * 180.0 / M_PI;
     endAngle   = endAngle   * 180.0 / M_PI;
