@@ -3,7 +3,6 @@
 function main(canvas){
     var ctx = canvas.getContext("2d");
 
-    ctx.beginPath(); //skip
     // Create clipping region
     ctx.arc(100, 100, 75, 0, Math.PI*2);
     ctx.fill();
