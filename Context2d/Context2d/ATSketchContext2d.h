@@ -20,7 +20,9 @@
 
 #pragma mark – ATCanvasGradient
 @protocol ATCanvasGradientExports<JSExport>
-- (void) addColorStop:(CGFloat)offset color:(NSString *)color;
+JSExportAs(addColorStop,
+- (void) addColorStop:(CGFloat)offset color:(NSString *)color
+);
 @end
 
 @interface ATCanvasGradient : NSObject<NSCopying,ATCanvasGradientExports>{
@@ -46,16 +48,16 @@
 
 #pragma mark - ATFontMetrics
 @interface ATFontMetrics : NSObject
-@property (readonly) CGFloat defaultLineHeight;
-@property (readonly) CGFloat baselineHeight;
-@property (readonly) CGFloat descentHeight;
-@property (readonly) CGFloat capHeight;
-@property (readonly) CGFloat xHeight;
-@property (readonly) CGFloat capHeightCenter;
-@property (readonly) CGFloat xHeightCenter;
-@property (readonly) CGFloat italicAngle;
-@property (readonly) CGSize maxAdvancement;
-@property (readonly) CGRect boundingRect;
+@property (nonatomic,readonly) CGFloat defaultLineHeight;
+@property (nonatomic,readonly) CGFloat baselineHeight;
+@property (nonatomic,readonly) CGFloat descentHeight;
+@property (nonatomic,readonly) CGFloat capHeight;
+@property (nonatomic,readonly) CGFloat xHeight;
+@property (nonatomic,readonly) CGFloat capHeightCenter;
+@property (nonatomic,readonly) CGFloat xHeightCenter;
+@property (nonatomic,readonly) CGFloat italicAngle;
+@property (nonatomic,readonly) CGSize maxAdvancement;
+@property (nonatomic,readonly) CGRect boundingRect;
 - (instancetype) initWithFont:(NSFont *)font;
 + (instancetype) metricsWithFont:(NSFont *)font;
 @end
@@ -86,8 +88,12 @@
 #pragma mark - Colors and Styles
 @property id strokeStyle;
 @property id fillStyle;
-- (ATCanvasGradient *) createLinearGradientAtX0:(CGFloat)x0 y0:(CGFloat)y0 x1:(CGFloat)x1 y1:(CGFloat)y1;
-- (ATCanvasGradient *)createRadialGradientAtX0:(CGFloat)x0 y0:(CGFloat)y0 r0:(CGFloat)r0 x1:(CGFloat)x1 y1:(CGFloat)y1 r1:(CGFloat)r1;
+JSExportAs(createLinearGradient,
+   - (ATCanvasGradient *) createLinearGradientAtX0:(CGFloat)x0 y0:(CGFloat)y0 x1:(CGFloat)x1 y1:(CGFloat)y1
+);
+JSExportAs(createRadialGradient,
+- (ATCanvasGradient *)createRadialGradientAtX0:(CGFloat)x0 y0:(CGFloat)y0 r0:(CGFloat)r0 x1:(CGFloat)x1 y1:(CGFloat)y1 r1:(CGFloat)r1
+);
 - (ATCanvasPattern *) createPattern;
 @property CGFloat lineWidth;
 @property NSString* lineCap;
