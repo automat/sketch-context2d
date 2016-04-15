@@ -234,8 +234,10 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 }
 
 - (void) resetWithGroup:(MSLayerGroup *)group{
-    _layer = nil;
     _group = group;
+    _target = _group;
+    
+    _layer = nil;
     _path  = nil;
     
     [_group resizeToFitChildrenWithOption:1];
@@ -248,7 +250,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     _stylePartFill   = [ATStylePart new];
     _stylePartShadow = nil;
     
-    _target = _group;
+
     [_state setObject:_target forKey:kATStateGroup];
     
     [self applyState:_state];

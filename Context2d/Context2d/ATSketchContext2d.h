@@ -173,30 +173,35 @@ JSExportAs(strokeText,
 
 #pragma mark - ATSketchContext2d
 @interface ATSketchContext2d : NSObject<ATSketchContext2dExports>{
+    //layer target
+    MSLayerGroup *_group;
     id _target;
+    
+    //state
+    NSMutableArray      *_stateStack;
+    NSMutableDictionary *_state;
+    NSMutableDictionary *_statePrev;
+   
+    //layer
+    MSShapeGroup *_layer;
+    
+    //style
+    MSStyle *_style;
+    ATStylePart *_stylePartStroke;
+    ATStylePart *_stylePartFill;
+    ATStylePart *_stylePartShadow;
+    
     //path state
-    BOOL         _pathDirty;
-    unsigned int _pathPaintCount;
-    NSString*    _pathWindingRule;
+    NSBezierPath *_path;
+    BOOL          _pathDirty;
+    unsigned int  _pathPaintCount;
+    NSString*     _pathWindingRule;
+    
     //textfont
     NSFont *_font;
     ATFontMetrics *_fontMetrics;
-    
-    NSMutableDictionary *_statePrev;
 }
 
-@property (readonly,nonatomic) id test;
-
-@property (readonly,nonatomic) MSLayerGroup *group;
-@property (readonly,nonatomic) MSShapeGroup *layer;
-@property (readonly,nonatomic) NSBezierPath *path;
-@property (readonly,nonatomic) NSMutableDictionary *state;
-@property (readonly,nonatomic) NSMutableArray *stateStack;
-
-@property (readonly,nonatomic) MSStyle *style;
-@property (readonly,nonatomic) ATStylePart *stylePartStroke;
-@property (readonly,nonatomic) ATStylePart *stylePartFill;
-@property (readonly,nonatomic) ATStylePart *stylePartShadow;
 
 #pragma mark - Init
 - (instancetype) init NS_UNAVAILABLE;
