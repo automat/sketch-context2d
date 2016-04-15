@@ -1,41 +1,69 @@
 #Summary
 
-- [ ]  passed
+- [x]  passed
 - [o]  partial passed
 - [_]  not passed
+- [-]  not supported
 
-##[x] 00-fillRect
+---
 
-##[x] 01-strokeRect
+###[x] 00-fillRect
 
-##[o] 02-fillText
+---
+
+###[x] 01-strokeRect
+
+---
+
+###[o] 02-fillText
 - transformation missing
 
-##[_] 03-strokeText
+---
+
+###[_] 03-strokeText
 - text-layer stroke missing
 - transformation missing
 
-##[x] 04-lineWidth
+---
 
-##[x] 05-lineCap
+###[x] 04-lineWidth
 
-##[x] 06-lineJoin
+---
 
-##[_] 07-miterLimit
+###[x] 05-lineCap
 
-##[x] 08-getLineDash
+---
 
-##[x] 09-setLineDash
+###[x] 06-lineJoin
 
-##[_] 10-lineDashOffset
-- not supported
+---
 
-##[x] 11-font
+###[_] 07-miterLimit
 
-##[x] 12-textAlign
+---
+
+###[x] 08-getLineDash
+
+---
+
+###[x] 09-setLineDash
+
+---
+
+###[-] 10-lineDashOffset
+
+---
+
+###[x] 11-font
+
+---
+
+###[x] 12-textAlign
 - LTR / RTL start / end falls back to just left / right
 
-##[o] 13-textBaseline
+---
+
+###[o] 13-textBaseline
 Depends on font information:
 
 ![](./summary-assets/13-textBaseline-sample-00.png)
@@ -49,76 +77,145 @@ Depends on font information:
 ![](./summary-assets/13-textBaseline-sample-08.png)
 ![](./summary-assets/13-textBaseline-sample-09.png)
 
+---
 
-##[x] 14-fillStyle
+###[x] 14-fillStyle
 
-##[x] 15-strokeStyle
+---
 
-##[x] 16-createLinearGradient
+###[x] 15-strokeStyle
 
-##[o] 17-createRadialGradient
+---
+
+###[x] 16-createLinearGradient
+
+---
+
+###[o] 17-createRadialGradient
 - outer / inner radius set doesnt work
 
-##[_] 18-createPattern
+---
 
-##[x] 19-shadowBlur
+###[_] 18-createPattern
 
-##[x] 20-shadowColor
+---
 
-##[x] 21-shadowOffsetX
+###[x] 19-shadowBlur
 
-##[x] 22-shadowOffsetY
+---
 
-##[x] 23-beginPath
+###[x] 20-shadowColor
 
-##[x] 24-closePath
+---
 
-##[x] 25-moveTo
+###[x] 21-shadowOffsetX
 
-##[x] 26-lineTo
+---
 
-##[x] 27-bezierCurveTo
+###[x] 22-shadowOffsetY
 
-##[x] 28-quadraticCurveTo
+---
 
-##[x] 29-arc
+###[x] 23-beginPath
 
-##[x] 30-arcTo
+---
 
-##[x] 31-rect
+###[x] 24-closePath
 
-##[x] 32-fill
+---
 
-##[x] 33-stroke
+###[x] 25-moveTo
 
-##[o] 34-clip
+---
 
-##[x] 35-rotate
+###[x] 26-lineTo
 
-##[x] 36-scale
+---
 
-##[x] 37-translate
+###[x] 27-bezierCurveTo
 
-##[x] 38-transform
+---
 
-##[x] 39-setTransform
+###[x] 28-quadraticCurveTo
 
-##[x] 40-globalAlpha
+---
 
-##[_] 41-globalCompositeOperation
+###[x] 29-arc
 
-##[_] 42-drawImage
+---
 
-##[_] 43-createImageData
+###[x] 30-arcTo
 
-##[_] 44-getImageData
+---
 
-##[_] 45-putImageData
+###[x] 31-rect
 
-##[o] 46-save
+---
+
+###[x] 32-fill
+
+---
+
+###[x] 33-stroke
+
+---
+
+###[o] 34-clip
+
+---
+
+###[x] 35-rotate
+
+---
+
+###[x] 36-scale
+
+---
+
+###[x] 37-translate
+
+---
+
+###[x] 38-transform
+
+---
+
+###[x] 39-setTransform
+
+---
+
+###[x] 40-globalAlpha
+
+---
+
+###[_] 41-globalCompositeOperation
+
+---
+
+###[_] 42-drawImage
+
+---
+
+###[_] 43-createImageData
+
+---
+
+###[_] 44-getImageData
+
+---
+
+###[_] 45-putImageData
+
+---
+
+###[o] 46-save
 - not completely tested
 
-##[o] 47-restore
+---
+
+###[o] 47-restore
 - not completely tested
 
-##[x] 48-canvas
+---
+
+###[x] 48-canvas
