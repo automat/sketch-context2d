@@ -70,10 +70,12 @@
 - (void)removeLayer:(id)arg1;
 @end
 
+#define MSTextLayer_Class NSclassFromString(@"MSTextLayer")
 @interface MSTextLayer : MSLayer
 - (void)setFont:(id)arg1;
 - (void)setStringValueWithoutUndo:(id)arg1;
 - (void)setTextColor:(id)arg1;
+@property(readonly, nonatomic) NSBezierPath *bezierPath;
 @end
 
 #pragma mark - Color & Style

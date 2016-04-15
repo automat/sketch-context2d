@@ -184,6 +184,7 @@ JSExportAs(strokeText,
    
     //layer
     MSShapeGroup *_layer;
+    id _layerActive;
     
     //style
     MSStyle *_style;

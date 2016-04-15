@@ -237,8 +237,9 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     _group = group;
     _target = _group;
     
-    _layer = nil;
-    _path  = nil;
+    _layer       = nil;
+    _layerActive = nil;
+    _path        = nil;
     
     [_group resizeToFitChildrenWithOption:1];
     
@@ -250,7 +251,6 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     _stylePartFill   = [ATStylePart new];
     _stylePartShadow = nil;
     
-
     [_state setObject:_target forKey:kATStateGroup];
     
     [self applyState:_state];
@@ -684,6 +684,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
         }
     }
     
+    _layerActive = _layer;
     [self updateGroupBounds];
     _pathPaintCount++;
 }
@@ -819,10 +820,22 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 
 - (void) clipWithWindingRule:(NSString *)rule{
     //rule not supported
+    if(!_layerActive){
+        return;
+    } else if([_layerActive isKindOfClass:[NSClassFromString(@"MSTextLayer") class]]){
+        //convert text-layer to path, use result as mask
+        _layer = [MSShapeGroup_Class shapeWithBezierPath:[_layerActive bezierPath]];
+        [_target addLayers:@[_layer]];
+        
+        _layerActive = _layer;
+        _path  = nil;
+    }
+
     [MSMaskWithShape_Class toggleMaskForSingleShape:_layer];
 
     MSLayerGroup *group = [MSLayerGroup_Class new];
     [_target removeLayer:_layer];
+
     [group addLayers:@[_layer]];
     [_target addLayers:@[group]];
     
@@ -956,6 +969,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
         //TODO: Add max width here,textLayer => GroupShape => skew, actual usecase?
     }
     
+    _layerActive = textLayer;
     [self updateGroupBounds];
 }
 
@@ -973,6 +987,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
         //TODO: Add max width here,textLayer => GroupShape => skew, actual usecase?
     }
     
+    _layerActive = textLayer;
     [self updateGroupBounds];
 }
 
