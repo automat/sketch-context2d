@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+    body{
+        padding: 0;
+        margin: 0;
+    }
+    #canvas{
+        margin: 0;
+        vertical-align: bottom;
+    }
+</style>
+<script>
+    var canvas, ctx;
+
+    function resize(){
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
+        canvas.style.width  = canvas.width + 'px';
+        canvas.style.height = canvas.height + 'px';
+    }
+
+    window.addEventListener('load',function(){
+        canvas = document.querySelector('#canvas');
+        ctx    = canvas.getContext('2d');
+        resize();
+    });
+    window.addEventListener('resize', resize);
+
+</script>
+<body>
+<canvas id="canvas"></canvas>
+</body>
+</html>
