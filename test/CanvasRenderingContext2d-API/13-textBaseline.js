@@ -5,19 +5,22 @@ function main(canvas){
 
     ctx.strokeStyle = 'green';
     ctx.beginPath();
-    ctx.moveTo(100,0);
-    ctx.lineTo(100,canvas.width);
+    ctx.moveTo(0,100);
+    ctx.lineTo(canvas.width,100);
     ctx.stroke();
 
-    ctx.font = "16px sans-serif";
+    ctx.font = "20px serif";
     var alignment = ['top','hanging','middle','alphabetic','ideographic','bottom'];
 
-    var text  = "Hello World";
-    var width = ctx.measureText(text).width;
-
+    var offset = 10;
     for(var i = 0; i < alignment.length; ++i){
-        ctx.textBaseline = alignment[i];
-        ctx.fillText(text,10 + width * i,100);
+        var align = alignment[i];
+        var width = ctx.measureText(align).width;
+
+        ctx.textBaseline = align;
+        ctx.fillText(align,offset,100);
+
+        offset += width + 20;
     }
 }
 
