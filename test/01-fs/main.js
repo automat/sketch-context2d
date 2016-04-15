@@ -7,7 +7,7 @@ const ease = require('./ease');
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 const data = fs.readFileSync(path.join(__dirnamePlugin,'data'),'utf8').split(',');
-const SAMPLE_LENGTH    = Math.min(32,data.length / 2 - 2);
+const SAMPLE_LENGTH    = Math.min(1024,data.length / 2 - 2);
 
 function normalize(value,start,end){
     return (value - start) / (end - start);
@@ -139,6 +139,7 @@ function main(canvas){
 
         ctx.fillStyle = '#fff';
         fillCircle(x,y, ease.stepSmooth(1.0 - entry.w) * 8);
+        ctx.fillText('ab',x,y);
     }
 
     //step

@@ -1,0 +1,11 @@
+//https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fill
+
+function main(canvas){
+    var ctx = canvas.getContext("2d");
+
+    ctx.beginPath(); //skip
+    ctx.rect(10, 10, 100, 100);
+    ctx.fill();
+}
+
+module.exports = main;
