@@ -763,8 +763,15 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     if(!_path){
         return;
     }
-    NSPoint cp = NSMakePoint(cpx, cpy);
-    [_path curveToPoint:NSMakePoint(x, y) controlPoint1:cp controlPoint2:cp];
+    double ratio = 2.0 / 3.0;
+    
+    NSPoint qp0 = [_path currentPoint];
+    NSPoint cp3 = NSMakePoint(x, y);
+    NSPoint cp1 = NSMakePoint(qp0.x + ratio * (cpx - qp0.x), qp0.y + ratio * (cpy - qp0.y));
+    NSPoint cp2 = NSMakePoint(x +     ratio * (cpx - x),     y +     ratio * (cpy - y));
+    
+    [_path curveToPoint:cp3 controlPoint1:cp1 controlPoint2:cp2];
+  
     [self markPathChanged];
 }
 

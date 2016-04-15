@@ -78,8 +78,7 @@ Depends on font information:
 
 ##[x] 27-bezierCurveTo
 
-##[o] 28-quadraticCurveTo
-- off
+##[x] 28-quadraticCurveTo
 
 ##[x] 29-arc
 
