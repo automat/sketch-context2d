@@ -66,8 +66,8 @@ JSExportAs(addColorStop,
 
 #pragma mark - ATImageData
 @protocol ATImageDateExports<JSExport>
-@property CGFloat width;
-@property CGFloat height;
+@property (nonatomic) CGFloat width;
+@property (nonatomic) CGFloat height;
 @property (nonatomic,readonly) NSArray* data;
 @end
 
@@ -79,14 +79,14 @@ JSExportAs(addColorStop,
 @property (nonatomic,readonly) ATSketchCanvas* canvas;
 
 #pragma mark - Compositing
-@property CGFloat globalAlpha;
-@property NSString *globalCompositeOperation;
+@property (nonatomic) CGFloat globalAlpha;
+@property (nonatomic) NSString *globalCompositeOperation;
 
 #pragma mark - Shadow
-@property NSString *shadowColor;
-@property CGFloat shadowOffsetX;
-@property CGFloat shadowOffsetY;
-@property CGFloat shadowBlur;
+@property (nonatomic) NSString *shadowColor;
+@property (nonatomic) CGFloat shadowOffsetX;
+@property (nonatomic) CGFloat shadowOffsetY;
+@property (nonatomic) CGFloat shadowBlur;
 
 #pragma mark - Colors and Styles
 @property id strokeStyle;
@@ -98,10 +98,10 @@ JSExportAs(createRadialGradient,
 - (ATCanvasGradient *)createRadialGradientAtX0:(CGFloat)x0 y0:(CGFloat)y0 r0:(CGFloat)r0 x1:(CGFloat)x1 y1:(CGFloat)y1 r1:(CGFloat)r1
 );
 - (ATCanvasPattern *) createPattern;
-@property CGFloat lineWidth;
-@property NSString* lineCap;
-@property NSString* lineJoin;
-@property CGFloat miterLimit;
+@property (nonatomic) CGFloat lineWidth;
+@property (nonatomic) NSString* lineCap;
+@property (nonatomic) NSString* lineJoin;
+@property (nonatomic) CGFloat miterLimit;
 
 - (void) setLineDash:(NSArray *)lineDash;
 - (NSArray *) getLineDash;
@@ -165,7 +165,6 @@ JSExportAs(fill,
 JSExportAs(clip,
 - (void) clipWithWindingRule:(NSString *)rule
 );
-
 
 #pragma mark - Text
 @property (nonatomic) NSString *font;
