@@ -260,6 +260,14 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     return [[ATSketchContext2d alloc]initWithGroup:group];
 }
 
+- (void) setCanvas:(ATSketchCanvas *)canvas{
+    _canvas = canvas;
+}
+
+- (ATSketchCanvas *)canvas{
+    return _canvas;
+}
+
 #pragma mark - State
 
 - (void) applyStateStyleParts:(NSMutableDictionary*)state{
@@ -773,7 +781,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 - (void) fillRectAtX:(CGFloat)x y:(CGFloat)y width:(CGFloat)width height:(CGFloat)height{
     [self beginPath];
     [self rectAtX:x y:y width:width height:height];
-    [self addPathWithStylePartStroke:NO fill:YES shadow:NO];
+    [self addPathWithStylePartStroke:NO fill:YES shadow:YES];
 }
 
 - (void) strokeRectAtX:(CGFloat)x y:(CGFloat)y width:(CGFloat)width height:(CGFloat)height{

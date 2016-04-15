@@ -23,6 +23,7 @@
     if(self){
         _group = [target group];
         _context = [ATSketchContext2d contextWithGroup:_group];
+        [_context setCanvas:self];
         _targetWidth  = [target size].width;
         _targetHeight = [target size].height;
     }
@@ -36,6 +37,7 @@
 - (void) resetWithTarget:(ATSketchCanvasTarget *)target{
     _group = [target group];
     [_context resetWithGroup:_group];
+    [_context setCanvas:self];
     _targetWidth  = [target size].width;
     _targetHeight = [target size].height;
 }

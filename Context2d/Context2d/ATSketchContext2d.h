@@ -11,6 +11,8 @@
 #import <JavaScriptCore/JavaScriptCore.h>
 #import "ATSketchInterface.h"
 
+@class ATSketchCanvas;
+
 #pragma mark – ATStylePart
 @interface ATStylePart : NSObject
 @property (nonatomic) id ref;
@@ -74,6 +76,7 @@ JSExportAs(addColorStop,
 
 #pragma mark – ATSketchContext2dExports
 @protocol ATSketchContext2dExports<JSExport>
+@property (nonatomic,readonly) ATSketchCanvas* canvas;
 
 #pragma mark - Compositing
 @property CGFloat globalAlpha;
@@ -179,6 +182,8 @@ JSExportAs(strokeText,
 
 #pragma mark - ATSketchContext2d
 @interface ATSketchContext2d : NSObject<ATSketchContext2dExports>{
+    ATSketchCanvas *_canvas;
+    
     //layer target
     MSLayerGroup *_group;
     id _target;
@@ -208,7 +213,7 @@ JSExportAs(strokeText,
     NSFont *_font;
     ATFontMetrics *_fontMetrics;
 }
-
+- (void) setCanvas:(ATSketchCanvas *)canvas;
 
 #pragma mark - Init
 - (instancetype) init NS_UNAVAILABLE;
