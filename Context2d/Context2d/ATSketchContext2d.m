@@ -15,6 +15,7 @@
 
 
 #include <math.h>
+#include <float.h>
 
 #pragma mark - ATStylePart
 
@@ -817,8 +818,15 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     if(!_path || _pathPaintCount > 0){ //can skip beginPath
         [self beginPath];
     }
+   
     startAngle = startAngle * 180.0 / M_PI;
     endAngle   = endAngle   * 180.0 / M_PI;
+    
+    //tempfix
+    if(anticlockwise && fabs(360.0 - (endAngle - startAngle)) < DBL_EPSILON){
+        anticlockwise = NO;
+    }
+    
     [_path appendBezierPathWithArcWithCenter:NSMakePoint(x, y) radius:radius startAngle:startAngle endAngle:endAngle clockwise:anticlockwise];
     [self markPathChanged];
 }

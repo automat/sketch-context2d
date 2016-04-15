@@ -140,7 +140,8 @@ Depends on font information:
 
 ---
 
-###[x] 29-arc
+###[o] 29-arc
+- problems with anticlockwise full circle
 
 ---
 
