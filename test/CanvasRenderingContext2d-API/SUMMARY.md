@@ -16,13 +16,12 @@
 ---
 
 ###[o] 02-fillText
-- transformation missing
+- if `ctx.useTextLayerShapes = false` only transformation translation works
 
 ---
 
 ###[_] 03-strokeText
-- text-layer stroke missing
-- transformation missing
+- if `ctx.useTextLayerShapes = false` only transformation translation works, no stroke
 
 ---
 

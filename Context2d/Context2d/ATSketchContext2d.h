@@ -76,6 +76,8 @@ JSExportAs(addColorStop,
 
 #pragma mark – ATSketchContext2dExports
 @protocol ATSketchContext2dExports<JSExport>
+@property (nonatomic) BOOL useTextLayerShapes;
+
 @property (nonatomic,readonly) ATSketchCanvas* canvas;
 
 #pragma mark - Compositing

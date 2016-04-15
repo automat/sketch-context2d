@@ -200,6 +200,8 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 
 @implementation ATSketchContext2d
 
+@synthesize useTextLayerShapes = _useTextLayerShapes;
+
 #pragma mark - Init
 
 + (NSDictionary *) defaultState{
@@ -245,6 +247,8 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 }
 
 - (void) resetWithGroup:(MSLayerGroup *)group{
+    _useTextLayerShapes = YES;
+    
     _group = group;
     _target = _group;
     
@@ -417,6 +421,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     MSGradient *msgradient = [gradient msgradient];
     [msgradient setGradientType:1];
 
+    //linear gradient from
     [msgradient setFrom:CGPointMake(x0, y0 + fabs(r1 - r0))];
     [msgradient setTo:CGPointMake(x1, y1)];
     [msgradient setElipseLength:1.0];
@@ -858,7 +863,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     //rule not supported
     if(!_layerActive){
         return;
-    } else if([_layerActive isKindOfClass:[NSClassFromString(@"MSTextLayer") class]]){
+    } else if(!_useTextLayerShapes && [_layerActive isKindOfClass:[NSClassFromString(@"MSTextLayer") class]]){
         //convert text-layer to path, use result as mask
         _layer = [MSShapeGroup_Class shapeWithBezierPath:[_layerActive bezierPath]];
         [_target addLayers:@[_layer]];
@@ -1003,34 +1008,69 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     if(!text || [text length] == 0){
         return;
     }
-    
     MSTextLayer *textLayer = [self textLayerWithText:text atX:x y:y];
-    [textLayer setTextColor:[self colorWithSVGStringWithGlobalAlpha:[_state objectForKey:kATStateFillStyle]]];
-
-    if(!isnan(maxWidth)){
-        //TODO: Add max width here,textLayer => GroupShape => skew, actual usecase?
+    if(!_useTextLayerShapes){
+        //translation only
+        NSAffineTransform *transform = [_state objectForKey:@"transform"];
+        CGPoint origin = [transform transformPoint:[[textLayer frame] origin]];
+        [[textLayer frame] setX:origin.x];
+        [[textLayer frame] setY:origin.y];
+        
+        //textcolor from fill
+        [textLayer setTextColor:[self colorWithSVGStringWithGlobalAlpha:[_state objectForKey:kATStateFillStyle]]];
+        
+        if(!isnan(maxWidth)){
+            //TODO: Add max width here,textLayer => GroupShape => skew, actual usecase?
+        }
+        
+        _layerActive = textLayer;
+        [self updateGroupBounds];
+        return;
     }
+    //textLayer vectorized
+    [self beginPath];
+    [_path appendBezierPath:[textLayer bezierPath]];
+    [self markPathChanged];
+    [self addPathWithStylePartStroke:NO fill:YES shadow:YES];
     
-    _layerActive = textLayer;
-    [self updateGroupBounds];
+    //FIXME: Create textlayer without adding to group
+    [_target removeLayer:textLayer];
 }
 
 - (void) strokeText:(NSString *)text x:(CGFloat)x y:(CGFloat)y maxWidth:(CGFloat)maxWidth{
     if(!text || [text length] == 0){
         return;
     }
-    
     MSTextLayer *textLayer = [self textLayerWithText:text atX:x y:y];
-    MSColor *color = [MSColor_Class colorWithSVGString:@"#ffffff"];
-    [color setAlpha:0.0];
-    [textLayer setTextColor:color];
-    
-    if(!isnan(maxWidth)){
-        //TODO: Add max width here,textLayer => GroupShape => skew, actual usecase?
+    if(!_useTextLayerShapes){
+        //translation only
+        NSAffineTransform *transform = [_state objectForKey:@"transform"];
+        CGPoint origin = [transform transformPoint:[[textLayer frame] origin]];
+        [[textLayer frame] setX:origin.x];
+        [[textLayer frame] setY:origin.y];
+        
+        //transparent fill color
+        MSColor *color = [MSColor_Class colorWithSVGString:@"#ffffff"];
+        [color setAlpha:0.0];
+        [textLayer setTextColor:color];
+        
+        if(!isnan(maxWidth)){
+            //TODO: Add max width here,textLayer => GroupShape => skew, actual usecase?
+        }
+        
+        _layerActive = textLayer;
+        [self updateGroupBounds];
+        return;
     }
+    //textLayer vectorized
+    [self beginPath];
+    [_path appendBezierPath:[textLayer bezierPath]];
+    [self markPathChanged];
+    [self addPathWithStylePartStroke:YES fill:NO shadow:YES];
     
-    _layerActive = textLayer;
-    [self updateGroupBounds];
+    //FIXME: Create textlayer without adding to group
+    [_target removeLayer:textLayer];
+
 }
 
 - (CGFloat) measureText_internal:(NSString *)text{

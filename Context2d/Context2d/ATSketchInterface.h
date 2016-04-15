@@ -30,6 +30,7 @@
 @end
 
 @interface MSRect
+@property(nonatomic) struct CGPoint origin;
 @property(nonatomic) double width;
 @property(nonatomic) double height;
 - (void)setY:(double)arg1;
