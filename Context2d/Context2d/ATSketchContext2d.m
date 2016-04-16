@@ -13,9 +13,12 @@
 #import "ATSketchInterface.h"
 #import "ATCOScriptInterface.h"
 
-
 #include <math.h>
 #include <float.h>
+
+#define ATJSContextThrowErrorString(errStr) \
+JSContext *context = [JSContext currentContext]; \
+context.exception = [JSValue valueWithNewErrorFromMessage:errStr inContext:context];
 
 #pragma mark - ATStylePart
 
@@ -61,6 +64,27 @@
     }
     return copy;
 }
+@end
+
+#pragma mark - ATImageData
+
+@implementation ATImageData
+@synthesize width = _width;
+@synthesize height = _height;
+@synthesize data = _data;
+
+- (instancetype) init{
+    self = [super init];
+    if(self){
+        _width = 0;
+        _height = 0;
+        _data = [JSValue valueWithNewArrayInContext: [JSContext currentContext]];
+        
+    }
+    return self;
+}
+
+
 @end
 
 @interface ATRGBAColor
@@ -885,9 +909,6 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 
 #pragma mark - Text
 
-
-
-
 - (void) setFont:(NSString *)font{
     if(font == [_state objectForKey:kATStateFont]){
         return;
@@ -1082,5 +1103,25 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     [metrics setWidth: [self measureText_internal:text]];
     return metrics;
 }
+
+#pragma mark - ImageData
+
+- (ATImageData *)createImageDataWidthWidth:(unsigned long long)width andHeight:(unsigned long long)height{
+    ATImageData *imageData = [ATImageData new];
+    //TODO: add
+    return imageData;
+}
+
+- (ATImageData *) getImageDataWithX:(unsigned long long)x y:(unsigned long long)y
+                           andWidth:(unsigned long long)width height:(unsigned long long)height{
+    ATImageData *imageData = [ATImageData new];
+    //TODO: add
+    return imageData;
+}
+
+- (void) putImageData:(ATImageData *)imageData withX:(unsigned long long)x y:(unsigned long long)y andDirtyX:(unsigned long long)dirtyX dirtyY:(unsigned long long)andDirtyWidth :(unsigned long long)width dirtyHeight:(unsigned long long)height{
+    //TODO:add
+}
+
 
 @end

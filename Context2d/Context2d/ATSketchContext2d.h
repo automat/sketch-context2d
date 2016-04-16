@@ -65,13 +65,17 @@ JSExportAs(addColorStop,
 @end
 
 #pragma mark - ATImageData
-@protocol ATImageDateExports<JSExport>
-@property (nonatomic) CGFloat width;
-@property (nonatomic) CGFloat height;
-@property (nonatomic,readonly) NSArray* data;
+@protocol ATImageDataExports<JSExport>
+@property (nonatomic) unsigned long long width;
+@property (nonatomic) unsigned long long height;
+@property (nonatomic,readonly) JSValue* data;
 @end
 
-@interface ATImageData : NSObject<ATTextMetricsExports>
+@interface ATImageData : NSObject<ATImageDataExports>{
+    unsigned long long _width;
+    unsigned long long _height;
+    JSValue *_data;
+}
 @end
 
 #pragma mark – ATSketchContext2dExports
@@ -179,6 +183,20 @@ JSExportAs(strokeText,
 - (void) strokeText:(NSString*)text x:(CGFloat)x y:(CGFloat)y maxWidth:(CGFloat)maxWidth
 );
 - (ATTextMetrics *) measureText:(NSString *)text;
+
+#pragma mark - ImageData
+JSExportAs(createImageData,
+- (ATImageData *) createImageDataWidthWidth:(unsigned long long)width andHeight:(unsigned long long)height
+);
+JSExportAs(getImageData,
+- (ATImageData *) getImageDataWithX:(unsigned long long)x y:(unsigned long long)y
+                           andWidth:(unsigned long long)width height:(unsigned long long)height
+);
+JSExportAs(putImageData,
+- (void) putImageData:(ATImageData *)imageData withX:(unsigned long long)x y:(unsigned long long)y
+                                           andDirtyX:(unsigned long long)dirtyX dirtyY:(unsigned long long)
+                                       andDirtyWidth:(unsigned long long) width dirtyHeight:(unsigned long long)height
+);
 @end
 
 #pragma mark - ATSketchContext2d
