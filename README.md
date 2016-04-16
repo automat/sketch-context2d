@@ -1,6 +1,6 @@
 *DRAFT – MORE TO COME* 
 
-![](./assets/cover.jpg)
+![](./assets/cover-00.jpg)
 
 
 ##Usage
