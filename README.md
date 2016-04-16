@@ -44,12 +44,13 @@ node index.js --verbose main.js
 
 https://www.w3.org/TR/2dcontext/ 
 (best overview)
-https://developer.mozilla.org/en/docs/Web/API/CanvasRenderingContext2D 
+https://developer.mozilla.org/en/docs/Web/API/CanvasRenderingContext2D  
 (more accessible, reference for single cmd tests [here](./test/CanvasRenderingContext2d-API))
 
 ###API-Implementation Status
 
-Around 70% is already done, mostly pixel based manipulations is missing. Everything not configurable by Sketch´s Interface is ignored (eg. miterLimit, lineDashOffset). [Overview here](./test/CanvasRenderingContext2d-API/SUMMARY.md)
+Around 70% is already done, mostly pixel based manipulations is missing. Everything not configurable by Sketch´s Interface is ignored (eg. miterLimit, lineDashOffset).  
+[Overview here](./test/CanvasRenderingContext2d-API/SUMMARY.md)
 
 ###CanvasRenderingContext2d API Additions
 
