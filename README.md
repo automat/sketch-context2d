@@ -1,6 +1,7 @@
 *DRAFT – MORE TO COME* 
 
-#sketch-context2d
+![](./assets/cover.png)
+
 
 ##Usage
 
