@@ -28,7 +28,9 @@ static BOOL verboseLog = NO;
     
     if(context == nil){
         context = [JSContext new];
-   
+        
+        context[@"sketch"] = @1;
+        
         //console
         context[@"__ATCOScriptPrint"] = ^(id o){
             ATCOScriptPrint(o);
