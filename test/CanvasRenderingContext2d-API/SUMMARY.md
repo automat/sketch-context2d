@@ -1,5 +1,4 @@
 #Summary
--
 
 | Symbol | Description |
 |--------|-------------|
@@ -7,9 +6,6 @@
 | [o] | Partially implemented |
 | [_] | Not implemented |
 | [-] | Not supported |
-
-
--
 
 | Status  | ID     | Name | Description |
 |---------|--------|------|-------------|
