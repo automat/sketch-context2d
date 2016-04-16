@@ -2,12 +2,23 @@
 
 ![](./assets/cover-00.jpg)
 
+##Introduction
+
+This isn't a plugin. Its node.js cmd line tool to run js modules via [browserify](https://github.com/substack/node-browserify) in Sketch.
+
+Essentially it creates a javascript context with an injected canvas object which is a representation of the current selected artboard or group and exposes Sketchs drawing capabilities through the canvas 2d context. The API mirrors CanvasRenderingContext2D.
+
+***Long story short, you can use javascript to draw things in Sketch just like you can in browser environments using canvas.*** 
+
+Paths are shape-layers, text gets translated to text-layers, all still editable and styleable. Transformation, style and text-layout states are saved in a stack.
+
+
 
 ##Usage
 
 ###Installation
 ```
-//atm just run the index.js
+//still in dev, atm just run the index.js
 ```
 
 ###File
