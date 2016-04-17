@@ -18,7 +18,7 @@ I work on visualising data on a daily basis. With a few exceptions this goes bey
 
 You shouldnt create visual-systems for data-representation in Sketch, verify them afterwards by implementing a defined style with actual data and hope it won't break. Creating those systems is also about edge-cases: What happens if the actual data isn't as interesting as expected? How can extreme values be handled? In which cases does it make sense to break the rule-set and establish a new one? Those questions should be part of the design process.
 
-We find solutions by constantly switching between design and implementation. I think this process can be unified and happen in a shared environment, right within Sketch and using your own preferred code toolset.  
+We find solutions by constantly switching between design and implementation. I think this process can be unified and happen in a shared environment, right within Sketch and using our own preferred code toolset.  
 
 
 ##Usage
