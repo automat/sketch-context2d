@@ -10,7 +10,7 @@ Essentially it creates a javascript context with an injected canvas object which
 
 ***Long story short, you can use javascript to draw things in Sketch just like you can in browser environments using canvas.*** 
 
-Paths are shape-layers, text gets translated to text-layers, all still editable and styleable. Transformation, style and text-layout states are saved in a stack.
+Paths are shape-layers, text gets translated to text-layers, all still editable and styleable. Transformation, style and text-layout states are saved on a stack.
 
 ###Great, but why?
 
@@ -19,6 +19,8 @@ I work on visualising data on a daily basis. With a few exceptions this goes bey
 You shouldnt create visual-systems for data-representation in Sketch, verify them afterwards by implementing a defined style with actual data and hope it won't break. Creating those systems is also about edge-cases: What happens if the actual data isn't as interesting as expected? How can extreme values be handled? In which cases does it make sense to break the rule-set and establish a new one? Those questions should be part of the design process.
 
 We find solutions by constantly switching between design and implementation. I think this process can be unified and happen in a shared environment, right within Sketch and using our own preferred code toolset.  
+
+###Some visual examples
 
 
 ##Usage
