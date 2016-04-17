@@ -51,7 +51,7 @@ function main(canvas){ //canvas, your selected artboard / group
 module.exports = main; //expose drawing function to sketch-context2d
 ```
 
-This will create a new group within your currently selected artboard or group named `example_{timestamp}`. The visual result of your drawing function will be placed within that group. In this case a diagonal black line will appear. Every time you change the `example.js` file and rerun *sketch-context2d* (or use the `--watch` option) the aforementioned group will get updated
+This will create a new group within your currently selected artboard or group named `example_{timestamp}`. The visual result of your drawing function will be placed within that group. In this case a diagonal black line will appear. Every time you change the `example.js` file and rerun *sketch-context2d* (or use the `--watch` option) the aforementioned group will get updated, including its timestamp.
 
 ###Installation
 ```
