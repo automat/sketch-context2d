@@ -23,7 +23,7 @@ We find solutions by constantly switching between design and implementation. I t
 ###Some visual examples
 
 ![](./assets/sample-plots.png)
-Out of context, some explorations using the same external data-set and a shared style. You can find the Sketch file and the js files for plotting the data [here](./examples/00-readme-plots/result.sketch), the original data is located [here](./examples/00-readme-plots/data/data-activity-top-5.txt).
+Out of context, some explorations using the same external data-set and a shared style. You can find the Sketch file and the js files for plotting the data [here](./examples/00-readme-plots/), the original data is located [here](./examples/00-readme-plots/data/data-activity-top-5.txt).
 
 ##Usage
 
