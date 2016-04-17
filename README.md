@@ -4,7 +4,7 @@
 
 ##Introduction
 
-This isn't a plugin. Its node.js cmd line tool to run js modules via [browserify](https://github.com/substack/node-browserify) in Sketch.
+This isn't a plugin. Its node.js **command-line tool to run js modules via [browserify](https://github.com/substack/node-browserify) in Sketch**.
 
 Essentially it creates a javascript context with an injected canvas object which is a representation of the current selected artboard or group and exposes Sketchs drawing capabilities through the canvas 2d context. The API mirrors CanvasRenderingContext2D.
 
@@ -21,6 +21,9 @@ You shouldnt create visual-systems for data-representation in Sketch, verify the
 We find solutions by constantly switching between design and implementation. I think this process can be unified and happen in a shared environment, right within Sketch and using our own preferred code toolset.  
 
 ###Some visual examples
+
+Out of context, some explorations using the same external data-set and a shared style. You can find the Sketch file and the js files for plotting the data [here](./examples/00-readme-plots/result.sketch), the original data is located [here](./examples/00-readme-plots/data/data-activity-top-5.txt)
+![](./assets/sample-plots.png).
 
 
 ##Usage
