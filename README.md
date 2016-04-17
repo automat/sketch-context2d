@@ -25,6 +25,11 @@ We find solutions by constantly switching between design and implementation. I t
 
 ##Usage
 
+###How does it work?
+
+![](./assets/scheme.jpg)
+Description here
+
 ###Installation
 ```
 //still in dev, atm just run the index.js
