@@ -28,19 +28,13 @@ We find solutions by constantly switching between design and implementation. I t
 ###How does it work?
 
 ![](./assets/scheme.jpg)
-Description here
+*sketch-context2d* takes your js files, browserifies them (handling your filesystem requests as well) and creates a new javascript-context right within Sketch with wrapped bindings to its layer drawing procedures.
 
-###Installation
-```
-//still in dev, atm just run the index.js
-```
+A simple `example.js` file:
 
-###File
-
-Example:
 ```
 //you can require node modules 😎
-var favModule = require('fav-module');
+//var favModule = require('fav-module');
 
 function main(canvas){ //canvas, your selected artboard / group
     var ctx = canvas.getContext('2d'); //exposed drawing capabilities
@@ -55,6 +49,13 @@ function main(canvas){ //canvas, your selected artboard / group
 }
 
 module.exports = main; //expose drawing function to sketch-context2d
+```
+
+This will create a new group within your currently selected artboard or group named `example_{timestamp}`. The visual result of your drawing function will be placed within that group. In this case a diagonal black line will appear. Every time you change the `example.js` file and rerun *sketch-context2d* (or use the `--watch` option) the aforementioned group will get updated
+
+###Installation
+```
+//still in dev, atm just run the index.js
 ```
 
 ###Run in Sketch
