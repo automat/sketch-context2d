@@ -83,41 +83,69 @@ if(!!argv['verbose']){
     console.log('Preparing script...');
 }
 
-const browserify = require('browserify')({
-    debug : true,
-    standalone : 'main'
-});
-const brfs = require('brfs');
-const browserifyReplace = require('browserify-replace');
+const brfs    = require('brfs');
+const replace = require('browserify-replace');
+
+
+var options = {
+    entries : [scriptPath],
+    debug: true,
+    standalone: 'main'
+};
+
+var isWatching = !!argv['watch'];
+var watchify;
+if(isWatching){
+    watchify = require('watchify');
+
+    options.cache = {};
+    options.packageCache = {};
+}
+
+const browserify = require('browserify')(options);
 
 var result = '';
 browserify
-    .add(scriptPath)
-    .transform(browserifyReplace,{
+    .transform(replace,{
         replace:[{
             from:'__dirnamePlugin',
             to:"'" + path.resolve(path.dirname(scriptPath)) + "'"}]
     })
-    .transform(brfs)
-    .bundle()
-    .on('data',function(data){
-        result += data;
-    })
-    .on('end',function(){
-        var sourceMapIndex = result.indexOf('//# sourceMappingURL');
-        var sourceMap      = result.substr(sourceMapIndex);
-        var scriptSource   = result.substr(0,sourceMapIndex);
+    .transform(brfs);
 
-        scriptSource = scriptSource.substr(0,scriptSource.length-1);
-        //appended exported method call with canvas instance
-        scriptSource = scriptSource + 'main(__ATSketchCanvasInstance);';
-        sourceMap    = sourceMap.split('\n')[0];
+function bundle(){
+    browserify.bundle()
+        .on('data',function(data){
+            result += data;
+        })
+        .on('end',function(){
+            var sourceMapIndex = result.indexOf('//# sourceMappingURL');
+            var sourceMap      = result.substr(sourceMapIndex);
+            var scriptSource   = result.substr(0,sourceMapIndex);
 
-        runScript(scriptPath, scriptSource, sourceMap);
-    })
-    .on('error',function(err){
-       throw new Error(err);
-    });
+            scriptSource = scriptSource.substr(0,scriptSource.length-1);
+            //appended exported method call with canvas instance
+            scriptSource = scriptSource + 'main(__ATSketchCanvasInstance);';
+            sourceMap    = sourceMap.split('\n')[0];
+
+            runScript(scriptPath, scriptSource, sourceMap);
+            result = '';
+        })
+        .on('error',function(err){
+            throw new Error(err);
+        });
+}
+bundle();
+
+if(isWatching){
+    browserify
+        .plugin(watchify)
+        .on('update',function(){
+            bundle()
+        });
+}
+
+
 
 
 
