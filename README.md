@@ -4,7 +4,7 @@
 
 ##Introduction
 
-This isn't a plugin. Its node.js **command-line tool to run js modules via [browserify](https://github.com/substack/node-browserify) in Sketch**.
+This isn't a plugin. It´s a **node.js module and command-line tool to run js modules via [browserify](https://github.com/substack/node-browserify) in Sketch**.
 
 Essentially it creates a javascript context with an injected canvas object which is a representation of the current selected artboard or group and exposes Sketchs drawing capabilities through the canvas 2d context. The API mirrors CanvasRenderingContext2D.
 
@@ -59,16 +59,57 @@ This will create a new group within your currently selected artboard or group na
 A recorded example using the `--watch` option drawing the Sketch logo in code.
 
 ###Installation
-```
-//still in dev, atm just run the index.js
-```
 
-###Run in Sketch
+Install node.js if necessary
 
 ```
-//run sketch-context2d on a module
-node index.js --verbose main.js
+brew install node
 ```
+
+Using [npm](https://www.npmjs.com/), do: (Not published yet)
+
+```
+npm install -g sketch-context2d
+```
+
+###Run
+
+Select a target artboard or group within Sketch.
+
+####CLI ( *To be added* )
+```
+$ sketch-context2d file.js
+```
+
+| Option        | Description                                   |
+|---------------|-----------------------------------------------|
+| --help        | Show all options                              |
+| --verbose     | Log details of the process                    |
+| --log-verbose | Log js script line number and columns         |
+| --recreate    | Don´t update groups in place, create new ones |
+| --flatten     | Flattens resulting group to image             |
+| --watch       | Watch the js script passed                    |
+
+
+
+####Module API example
+
+```
+//do something here
+
+//sketch-context2d options, see above
+const options = {
+    verbose    : false,
+    verboseLog : false,
+    recreate   : false,
+    flatten    : false,
+    watch      : false
+};
+
+//run / watch js file in Sketch
+require('sketch-context2d')(['dir/file.js'],options);
+```
+
 
 ##API-Reference
 
