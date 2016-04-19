@@ -25,7 +25,6 @@ We find solutions by constantly switching between design and implementation. I t
 ![](./assets/sample-plots.png)
 Out of context, some explorations using the same external data-set and a shared style. You can find the Sketch file and the js files for plotting the data [here](./examples/00-readme-plots/), the original data is located [here](./examples/00-readme-plots/data/data-activity-top-5.txt).
 
-##Usage
 
 ###How does it work?
 
@@ -58,7 +57,7 @@ This will create a new group within your currently selected artboard or group na
 ![](./assets/screencast-00.gif)
 A recorded example using the `--watch` option drawing the Sketch logo in code.
 
-###Installation
+##Installation
 
 Install node.js if necessary
 
@@ -72,7 +71,7 @@ Using [npm](https://www.npmjs.com/), do: (Not published yet)
 npm install -g sketch-context2d
 ```
 
-###Run
+##Run
 
 Select a target artboard or group within Sketch.
 
