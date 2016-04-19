@@ -1,74 +1,52 @@
-const argv = require('minimist')(process.argv.slice(2));
 const fs   = require('fs');
 const path = require('path');
 
-// Help
-
-if(argv['help']){
-    console.log('--help     ',   'Show all argument options');
-    console.log('--verbose  ',   'Log process');
-    console.log('--log-verbose ','Log js script line number and columns');
-    console.log('--recreate ',   'Don´t override target groups, create new ones')
-    console.log('--flatten  ',   'Flattens resulting path group to image');
-    console.log('--watch    ',   'Watch js script');
-    console.log('');
-}
-
-/*--------------------------------------------------------------------------------------------------------------------*/
-// Input script path validation
-/*--------------------------------------------------------------------------------------------------------------------*/
-
-// Validate script input
-var scriptPath = argv._[0];
-if(!scriptPath){
-    console.log('No js script path passed.');
-    return;
-}
-
-// validate script path
-try{
-    fs.accessSync(scriptPath, fs.F_OK);
-} catch (e) {
-    console.log("Invalid script path.");
-    return;
-}
-
-/*--------------------------------------------------------------------------------------------------------------------*/
-// run
-/*--------------------------------------------------------------------------------------------------------------------*/
+const browserify = require('browserify');
+const watchify   = require('watchify');
+const brfs       = require('brfs');
+const replace    = require('browserify-replace');
 
 const exec = require('child_process').exec;
+const validateOptions = require('validate-option');
 
-const PLUGIN_DIR    = './plugin';
-const COSCRIPT_PATH = './lib/COScript/coscript';
+const DEFAULT_OPTIONS = {
+    verbose    : false,
+    verboseLog : false,
+    recreate   : false,
+    flatten    : false,
+    watch      : false
+};
 
-function runScript(scriptPath, scriptSource, sourceMap){
+const PLUGIN_DIR    = path.resolve(__dirname,'./plugin');
+const COSCRIPT_PATH = path.resolve(__dirname,'./lib/COScript/coscript');
+
+function runScript(scriptPath, scriptSource, sourceMap, options){
     var name = path.basename(scriptPath);
-        name = name.substr(0,name.indexOf('.'));
+        name = name.substr(0, name.indexOf('.'));
 
-    var plugin = fs.readFileSync('./index.cocoascript','utf8')
-        .replace(new RegExp('__dirname__','g'),    "'" + __dirname + "'")
-        .replace(new RegExp('__scriptname__','g'), "'" + name + "'")
-        .replace(new RegExp('__recreate__', 'g'),  !!argv['recreate'])
-        .replace(new RegExp('__verbose__', 'g'),   !!argv['verbose'])
-        .replace(new RegExp('__verboselog__','g'), !!argv['verbose-log'])
-        .replace(new RegExp('__flatten__', 'g'),   !!argv['flatten']);
+    var plugin = fs.readFileSync(path.resolve(__dirname,'./index.cocoascript'), 'utf8')
+        .replace(new RegExp('__dirname__', 'g'), "'" + __dirname + "'")
+        .replace(new RegExp('__scriptname__', 'g'), "'" + name + "'")
+        .replace(new RegExp('__recreate__', 'g'),   options.recreate)
+        .replace(new RegExp('__verbose__', 'g'),    options.verbose)
+        .replace(new RegExp('__verboselog__', 'g'), options.verboseLog)
+        .replace(new RegExp('__flatten__', 'g'),    options.flatten);
 
     try{
         fs.accessSync(PLUGIN_DIR, fs.F_OK)
-    } catch (e){
+    }catch(e){
         fs.mkdirSync(PLUGIN_DIR);
     }
 
-    var pluginCOPath = path.join(PLUGIN_DIR,'plugin.cocoascript');
+    var pluginCOPath = path.join(PLUGIN_DIR, 'plugin.cocoascript');
 
-    fs.writeFileSync(path.join(PLUGIN_DIR,'plugin.cocoascript'),plugin);
-    fs.writeFileSync(path.join(PLUGIN_DIR,'plugin.js'),scriptSource);
+    fs.writeFileSync(path.join(PLUGIN_DIR, 'plugin.cocoascript'), plugin);
+    fs.writeFileSync(path.join(PLUGIN_DIR, 'plugin.js'), scriptSource);
 
     //http://mail.sketchplugins.com/pipermail/dev_sketchplugins.com/2014-August/000548.html
     //http://developer.sketchapp.com/code-examples/third-party-integrations/
     var cmd = COSCRIPT_PATH + ' -e "[[[COScript app:\\"Sketch\\"] delegate] runPluginAtURL:[NSURL fileURLWithPath:\\""' + pluginCOPath + '"\\"]]"';
-    exec(cmd, function (err, stdout, stderr) {
+    exec(cmd, function(err, stdout, stderr){
         if(err || stderr){
             throw new Error(err || stderr);
         }
@@ -76,76 +54,81 @@ function runScript(scriptPath, scriptSource, sourceMap){
     });
 }
 
-/*--------------------------------------------------------------------------------------------------------------------*/
-// Browserify
-/*--------------------------------------------------------------------------------------------------------------------*/
-if(!!argv['verbose']){
-    console.log('Preparing script...');
+function SketchContext2d(files,options){
+    if(!files || !files.length){
+        throw new Error('No entry files passed.');
+    }
+    options = validateOptions(options,DEFAULT_OPTIONS);
+
+    //validate file paths
+    for(var i = 0; i < files.length; ++i){
+        var entry = files[i] = path.resolve(__dirname,files[i]);
+        try{
+            fs.accessSync(entry,fs.F_OK);
+        } catch(e){
+            throw new Error('Invalid file path: ' + entry);
+        }
+    }
+
+    //multiple files support will come, just use first atm
+    var scriptPath = files[0];
+
+    //gen sourcemaps, export as 'main'
+    var optionsbi = {
+        entries : [scriptPath],
+        debug : true,
+        standalone : 'main'
+    };
+
+    if(options.watch){
+        optionsbi.cache = {};
+        optionsbi.packageCache = {};
+    }
+
+    var browserifyi = browserify(optionsbi);
+
+    var result = '';
+    browserifyi
+        .transform(replace,{
+            replace:[{
+                from:'__dirnamePlugin',
+                to:"'" + path.resolve(path.dirname(scriptPath)) + "'"}]
+        })
+        .transform(brfs);
+
+    function bundle(){
+        browserifyi.bundle()
+            .on('data',function(data){
+                result += data;
+            })
+            .on('end',function(){
+                var sourceMapIndex = result.indexOf('//# sourceMappingURL');
+                var sourceMap      = result.substr(sourceMapIndex);
+                var scriptSource   = result.substr(0,sourceMapIndex);
+
+                scriptSource = scriptSource.substr(0,scriptSource.length-1);
+                //appended exported method call with canvas instance
+                scriptSource = scriptSource + 'main(__ATSketchCanvasInstance);';
+                sourceMap    = sourceMap.split('\n')[0];
+
+                runScript(scriptPath, scriptSource, sourceMap, options);
+                result = '';
+            })
+            .on('error',function(err){
+                throw new Error(err);
+            });
+    }
+    bundle();
+
+    if(options.watch){
+        browserifyi
+            .plugin(watchify)
+            .on('update', function(){
+                bundle();
+            });
+    }
 }
 
-const brfs    = require('brfs');
-const replace = require('browserify-replace');
-
-
-var options = {
-    entries : [scriptPath],
-    debug: true,
-    standalone: 'main'
+module.exports = function(files,options){
+    return new SketchContext2d(files,options);
 };
-
-var isWatching = !!argv['watch'];
-var watchify;
-if(isWatching){
-    watchify = require('watchify');
-
-    options.cache = {};
-    options.packageCache = {};
-}
-
-const browserify = require('browserify')(options);
-
-var result = '';
-browserify
-    .transform(replace,{
-        replace:[{
-            from:'__dirnamePlugin',
-            to:"'" + path.resolve(path.dirname(scriptPath)) + "'"}]
-    })
-    .transform(brfs);
-
-function bundle(){
-    browserify.bundle()
-        .on('data',function(data){
-            result += data;
-        })
-        .on('end',function(){
-            var sourceMapIndex = result.indexOf('//# sourceMappingURL');
-            var sourceMap      = result.substr(sourceMapIndex);
-            var scriptSource   = result.substr(0,sourceMapIndex);
-
-            scriptSource = scriptSource.substr(0,scriptSource.length-1);
-            //appended exported method call with canvas instance
-            scriptSource = scriptSource + 'main(__ATSketchCanvasInstance);';
-            sourceMap    = sourceMap.split('\n')[0];
-
-            runScript(scriptPath, scriptSource, sourceMap);
-            result = '';
-        })
-        .on('error',function(err){
-            throw new Error(err);
-        });
-}
-bundle();
-
-if(isWatching){
-    browserify
-        .plugin(watchify)
-        .on('update',function(){
-            bundle()
-        });
-}
-
-
-
-
-
