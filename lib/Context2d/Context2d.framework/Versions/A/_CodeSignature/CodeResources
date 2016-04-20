@@ -6,23 +6,44 @@
 	<dict>
 		<key>Resources/Info.plist</key>
 		<data>
-		4+jm/P9Kh7KkHu5Ek2VMPAIBog8=
+		6x5zI+gzF0iNd20LkmumbfyLZLk=
 		</data>
 	</dict>
 	<key>files2</key>
 	<dict>
 		<key>Headers/Context2d.h</key>
-		<data>
-		oNGroz4Z8NhyU0KyjkNSsKOPZQ0=
-		</data>
+		<dict>
+			<key>hash</key>
+			<data>
+			oNGroz4Z8NhyU0KyjkNSsKOPZQ0=
+			</data>
+			<key>hash2</key>
+			<data>
+			dlitGMPlvyA/lXDtj44u6qz2JMV0FNg63yU24Q9MgYA=
+			</data>
+		</dict>
 		<key>Modules/module.modulemap</key>
-		<data>
-		Fq+xi2fF5WJ+aAAL/mCNZUT6Z8I=
-		</data>
+		<dict>
+			<key>hash</key>
+			<data>
+			Fq+xi2fF5WJ+aAAL/mCNZUT6Z8I=
+			</data>
+			<key>hash2</key>
+			<data>
+			BGK5HTE1V8iz0XV0Pjj1TOHdEOKxCtI5zDkgnzf8kI4=
+			</data>
+		</dict>
 		<key>Resources/Info.plist</key>
-		<data>
-		4+jm/P9Kh7KkHu5Ek2VMPAIBog8=
-		</data>
+		<dict>
+			<key>hash</key>
+			<data>
+			6x5zI+gzF0iNd20LkmumbfyLZLk=
+			</data>
+			<key>hash2</key>
+			<data>
+			JNHqcuDqwmMBvDLwrPgVBFSePPNf9clKgkUzYoQMmUc=
+			</data>
+		</dict>
 	</dict>
 	<key>rules</key>
 	<dict>

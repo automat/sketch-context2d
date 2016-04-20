@@ -629,6 +629,15 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     if ([_path elementCount] < 1 || !_pathDirty) {
         return;
     }
+    
+    //already stroked path, need to copy path and paint on top
+    if(fill && _stylePartStroke.ref){
+        _path = [_path copy];
+        _pathDirty = YES;
+        _pathPaintCount = 0;
+        
+        [self resetLayerAndStyle];
+    }
 
     //transform
     NSAffineTransform *transform = [_state objectForKey:kATStateTransform];
@@ -758,11 +767,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     _pathPaintCount = 0;
 }
 
-- (void) beginPath{
-    _path           = [NSBezierPath bezierPath];
-    _pathDirty      = NO;
-    _pathPaintCount = 0;
-    
+- (void) resetLayerAndStyle{
     //TODO: non hard copy
     _layer = nil;
     _style = [MSStyle_Class new];
@@ -770,6 +775,14 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     _stylePartFill   = [ATStylePart new];
     _stylePartShadow = [ATStylePart new];
     [self applyStateStyleParts:_state];
+}
+
+- (void) beginPath{
+    _path           = [NSBezierPath bezierPath];
+    _pathDirty      = NO;
+    _pathPaintCount = 0;
+    
+    [self resetLayerAndStyle];
 }
 
 - (void) closePath{
@@ -1119,7 +1132,9 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     return imageData;
 }
 
-- (void) putImageData:(ATImageData *)imageData withX:(unsigned long long)x y:(unsigned long long)y andDirtyX:(unsigned long long)dirtyX dirtyY:(unsigned long long)andDirtyWidth :(unsigned long long)width dirtyHeight:(unsigned long long)height{
+- (void) putImageData:(ATImageData *)imageData withX:(unsigned long long)x y:(unsigned long long)y
+            andDirtyX:(unsigned long long)dirtyX dirtyY:(unsigned long long)
+       andDirtyWidth :(unsigned long long)width dirtyHeight:(unsigned long long)height{
     //TODO:add
 }
 
