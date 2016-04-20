@@ -59,45 +59,51 @@ if(!target){
 //script render target group
 var group;
 var groupIndex = -1;
-if(!__recreate__){
-    var contextGroups = [];
 
-    function find(element){
-        var class_ = element.class();
-        if(class_ != MSArtboardGroup && class_ != MSLayerGroup){
-            return;
-        }
-        var name = element.name();
-        if(name.indexOf(SCRIPT_NAME) != -1){
-            if(name.indexOf('keep') == -1){
-                contextGroups.push(element);
-            }
-        }
+//check if there is already a script group
+var contextGroups = [];
 
-        var layers = element.layers();
-        var length = layers.count();
-        for(var i = 0; i < length; ++i){
-            find(layers.objectAtIndex(i));
+function find(element){
+    var class_ = element.class();
+    if(class_ != MSArtboardGroup && class_ != MSLayerGroup){
+        return;
+    }
+    var name = element.name();
+    if(name.indexOf(SCRIPT_NAME) != -1){
+        if(name.indexOf('keep') == -1){
+            contextGroups.push(element);
         }
     }
 
-    find(target);
-
-    if(contextGroups.length > 0){
-        contextGroups.sort(function(a, b){
-            var tokensA = a.name().split('_');
-            var tokensB = b.name().split('_');
-            var timestampA = tokensA[tokensA.length - 1];
-            var timestampB = tokensB[tokensB.length - 1];
-
-            return timestampA > timestampB ? -1 : 1;
-        });
-
-        group = contextGroups[0];
-        groupIndex = target.indexOfLayer_(group);
-        target.removeLayer(group);
+    var layers = element.layers();
+    var length = layers.count();
+    for(var i = 0; i < length; ++i){
+        find(layers.objectAtIndex(i));
     }
 }
+
+find(target);
+
+if(contextGroups.length > 0){
+    contextGroups.sort(function(a, b){
+        var tokensA = a.name().split('_');
+        var tokensB = b.name().split('_');
+        var timestampA = tokensA[tokensA.length - 1];
+        var timestampB = tokensB[tokensB.length - 1];
+
+        return timestampA > timestampB ? -1 : 1;
+    });
+
+    group = contextGroups[0];
+    groupIndex = target.indexOfLayer_(group);
+
+    if(!__recreate__){
+        target.removeLayer(group);
+    } else {
+        groupIndex+=1;
+    }
+}
+
 
 //create/override group
 group = MSLayerGroup.new();
