@@ -34,7 +34,7 @@ JSExportAs(addColorStop,
 @end
 
 #pragma mark – ATCanvasPattern
-@interface ATCanvasPattern : NSObject<NSCopying>
+@interface ATCanvasPattern : NSObject
 @end
 
 #pragma mark - ATTextMetrics
@@ -78,6 +78,13 @@ JSExportAs(addColorStop,
 }
 @end
 
+#pragma mark - ATImage
+@protocol ATImageExports<JSExport>
+@end
+
+@interface ATImage : NSObject<ATImageExports>
+@end
+
 #pragma mark – ATSketchContext2dExports
 @protocol ATSketchContext2dExports<JSExport>
 @property (nonatomic) BOOL useTextLayerShapes;
@@ -103,7 +110,10 @@ JSExportAs(createLinearGradient,
 JSExportAs(createRadialGradient,
 - (ATCanvasGradient *)createRadialGradientAtX0:(CGFloat)x0 y0:(CGFloat)y0 r0:(CGFloat)r0 x1:(CGFloat)x1 y1:(CGFloat)y1 r1:(CGFloat)r1
 );
-- (ATCanvasPattern *) createPattern;
+JSExportAs(createPattern,
+- (ATCanvasPattern *) createPatternWithImage:(ATImage *)image andRepetition:(NSString*)repetition
+);
+
 @property (nonatomic) CGFloat lineWidth;
 @property (nonatomic) NSString* lineCap;
 @property (nonatomic) NSString* lineJoin;

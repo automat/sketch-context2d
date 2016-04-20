@@ -66,6 +66,10 @@ context.exception = [JSValue valueWithNewErrorFromMessage:errStr inContext:conte
 }
 @end
 
+#pragma marl - ATCanvasPatter
+@implementation ATCanvasPattern
+@end
+
 #pragma mark - ATImageData
 
 @implementation ATImageData
@@ -86,6 +90,8 @@ context.exception = [JSValue valueWithNewErrorFromMessage:errStr inContext:conte
 
 
 @end
+
+
 
 @interface ATRGBAColor
 @property (nonatomic) NSString* rgb;
@@ -450,6 +456,11 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     [msgradient setTo:CGPointMake(x1, y1)];
     [msgradient setElipseLength:1.0];
     return gradient;
+}
+
+- (ATCanvasPattern *) createPatternWithImage:(ATImage *)image andRepetition:(NSString *)repetition{
+    ATCanvasPattern *pattern = [ATCanvasPattern new];
+    return pattern;
 }
 
 #pragma mark - Compositing

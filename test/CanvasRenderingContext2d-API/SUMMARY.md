@@ -27,7 +27,7 @@
 | [x]     | 15     | strokeStyke | - |
 | [x]     | 16     | createLinearGradient | - |
 | **[o]** | **17** | **createRadialGradient** | currently only works if outer/inner radius have same origin |
-| **[_]** | **18** | **createPattern** | - |
+| **[o]** | **18** | **createPattern** | stub |
 | [x]     | 19     | shadowBlur | - |
 | [x]     | 20     | shadowColor | - |
 | [x]     | 21     | shadowOffsetX | - |
