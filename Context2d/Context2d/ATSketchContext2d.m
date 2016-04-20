@@ -66,7 +66,7 @@ context.exception = [JSValue valueWithNewErrorFromMessage:errStr inContext:conte
 }
 @end
 
-#pragma marl - ATCanvasPatter
+#pragma mark - ATCanvasPatter
 @implementation ATCanvasPattern
 @end
 
