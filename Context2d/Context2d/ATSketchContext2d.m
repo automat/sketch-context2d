@@ -76,7 +76,6 @@ context.exception = [JSValue valueWithNewErrorFromMessage:errStr inContext:conte
 @synthesize width = _width;
 @synthesize height = _height;
 @synthesize data = _data;
-
 - (instancetype) init{
     self = [super init];
     if(self){
@@ -87,11 +86,62 @@ context.exception = [JSValue valueWithNewErrorFromMessage:errStr inContext:conte
     }
     return self;
 }
-
-
 @end
 
-
+#pragma mark - ATImage
+@implementation ATImage
+- (instancetype) init{
+    self = [super init];
+    if(self){
+        _src = @"";
+        _imageSrc = nil;
+        _image    = _imageSrc;
+    }
+    return self;
+}
+- (void) setSrc:(NSString *)src{
+    _src = src;
+    _imageSrc = [[NSImage alloc] initWithContentsOfFile:_src];
+    if(![_imageSrc isValid]){
+        NSString *msg = [NSString stringWithFormat:@"No valid image: %@", src];
+        ATJSContextThrowErrorString(msg);
+    }
+    _image    = _imageSrc;
+    _naturalSize.width  = [_image size].width;
+    _naturalSize.height = [_image size].height;
+}
+- (NSString *)src{
+    return _src;
+}
+- (unsigned long) naturalWidth{
+    return _naturalSize.width;
+}
+- (unsigned long) naturalHeight{
+    return _naturalSize.height;
+}
+- (void) resizeToWidth:(unsigned long) width andHeight:(unsigned long)height{
+    if(!_imageSrc){
+        return;
+    }
+    _image = [[NSImage alloc] initWithSize:NSMakeSize(width, height)];
+    [_image lockFocus];
+    [[NSGraphicsContext currentContext] setImageInterpolation:NSImageInterpolationHigh];
+    [_image drawAtPoint:NSZeroPoint fromRect:CGRectMake(0, 0, width, height) operation:NSCompositeCopy fraction:1.0];
+    [_image unlockFocus];
+}
+- (void) setWidth:(unsigned long)width{
+    [self resizeToWidth:width andHeight:self.height];
+}
+- (unsigned long) width{
+    return !_image ? 0 : [_image size].width;
+}
+- (void) setHeight:(unsigned long)height{
+    [self resizeToWidth:self.width andHeight:height];
+}
+- (unsigned long) height{
+    return !_image ? 0 : [_image size].height;
+}
+@end
 
 @interface ATRGBAColor
 @property (nonatomic) NSString* rgb;

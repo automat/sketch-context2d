@@ -80,9 +80,19 @@ JSExportAs(addColorStop,
 
 #pragma mark - ATImage
 @protocol ATImageExports<JSExport>
+@property (nonatomic) NSString *src;
+@property (nonatomic) unsigned long width;
+@property (nonatomic) unsigned long height;
+@property (readonly,nonatomic) unsigned long naturalWidth;
+@property (readonly,nonatomic) unsigned long naturalHeight;
 @end
 
-@interface ATImage : NSObject<ATImageExports>
+@interface ATImage : NSObject<ATImageExports>{
+    NSString *_src;
+    NSImage *_imageSrc;
+    CGSize _naturalSize;
+}
+@property (readonly,nonatomic) NSImage *image;
 @end
 
 #pragma mark – ATSketchContext2dExports
