@@ -8,6 +8,7 @@
 
 #import "ATContext2dJS.h"
 #import "ATCOScriptInterface.h"
+#import "ATSketchImage.h"
 #import "ATSketchCanvas.h"
 
 #import <JavaScriptCore/JavaScriptCore.h>
@@ -34,6 +35,11 @@ static BOOL verboseLog = NO;
         //console
         context[@"__ATCOScriptPrint"] = ^(id o){
             ATCOScriptPrint(o);
+        };
+        
+        //image
+        context[@"Image"] = ^ATSketchImage*{
+            return [ATSketchImage new];
         };
 
         //init canvas
