@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <JavaScriptCore/JavaScriptCore.h>
+#import "ATSketchImage.h"
 #import "ATSketchInterface.h"
 
 @class ATSketchCanvas;
@@ -78,23 +79,6 @@ JSExportAs(addColorStop,
 }
 @end
 
-#pragma mark - ATImage
-@protocol ATImageExports<JSExport>
-@property (nonatomic) NSString *src;
-@property (nonatomic) unsigned long width;
-@property (nonatomic) unsigned long height;
-@property (readonly,nonatomic) unsigned long naturalWidth;
-@property (readonly,nonatomic) unsigned long naturalHeight;
-@end
-
-@interface ATImage : NSObject<ATImageExports>{
-    NSString *_src;
-    NSImage *_imageSrc;
-    CGSize _naturalSize;
-}
-@property (readonly,nonatomic) NSImage *image;
-@end
-
 #pragma mark – ATSketchContext2dExports
 @protocol ATSketchContext2dExports<JSExport>
 @property (nonatomic) BOOL useTextLayerShapes;
@@ -121,7 +105,7 @@ JSExportAs(createRadialGradient,
 - (ATCanvasGradient *)createRadialGradientAtX0:(CGFloat)x0 y0:(CGFloat)y0 r0:(CGFloat)r0 x1:(CGFloat)x1 y1:(CGFloat)y1 r1:(CGFloat)r1
 );
 JSExportAs(createPattern,
-- (ATCanvasPattern *) createPatternWithImage:(ATImage *)image andRepetition:(NSString*)repetition
+- (ATCanvasPattern *) createPatternWithImage:(ATSketchImage *)image andRepetition:(NSString*)repetition
 );
 
 @property (nonatomic) CGFloat lineWidth;
@@ -217,6 +201,17 @@ JSExportAs(putImageData,
                                            andDirtyX:(unsigned long long)dirtyX dirtyY:(unsigned long long)
                                        andDirtyWidth:(unsigned long long) width dirtyHeight:(unsigned long long)height
 );
+
+#pragma mark - Image
+JSExportAs(drawImage,
+- (void) drawImage:(ATSketchImage *)image
+            fromSx:(CGFloat)sx sy:(CGFloat)sy
+             andSw:(CGFloat)sw sh:(CGFloat)sh
+              toDx:(CGFloat)dx dy:(CGFloat)dy
+             andDw:(CGFloat)dw dh:(CGFloat)dh
+);
+
+
 @end
 
 #pragma mark - ATSketchContext2d

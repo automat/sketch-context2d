@@ -16,8 +16,11 @@
 		CD09B2521CB9BF4A00552508 /* ATContext2dJS.m in Sources */ = {isa = PBXBuildFile; fileRef = CD09B2501CB9BF4A00552508 /* ATContext2dJS.m */; };
 		CD09B2551CB9CA1800552508 /* ATSketchCanvas.h in Headers */ = {isa = PBXBuildFile; fileRef = CD09B2531CB9CA1800552508 /* ATSketchCanvas.h */; };
 		CD09B2561CB9CA1800552508 /* ATSketchCanvas.m in Sources */ = {isa = PBXBuildFile; fileRef = CD09B2541CB9CA1800552508 /* ATSketchCanvas.m */; };
-		CD5F832C1CBD5F3A00F32689 /* ATSketchCanvasTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = CD5F832A1CBD5F3A00F32689 /* ATSketchCanvasTarget.h */; };
-		CD5F832D1CBD5F3A00F32689 /* ATSketchCanvasTarget.m in Sources */ = {isa = PBXBuildFile; fileRef = CD5F832B1CBD5F3A00F32689 /* ATSketchCanvasTarget.m */; };
+		CDDB289D1CCD07C30004A1C6 /* ATSketchCanvasTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = CDDB289B1CCD07C30004A1C6 /* ATSketchCanvasTarget.h */; };
+		CDDB289E1CCD07C30004A1C6 /* ATSketchCanvasTarget.m in Sources */ = {isa = PBXBuildFile; fileRef = CDDB289C1CCD07C30004A1C6 /* ATSketchCanvasTarget.m */; };
+		CDE8936D1CCA3C97005B8B03 /* ATSketchImage.h in Headers */ = {isa = PBXBuildFile; fileRef = CDE8936B1CCA3C97005B8B03 /* ATSketchImage.h */; };
+		CDE8936E1CCA3C97005B8B03 /* ATSketchImage.m in Sources */ = {isa = PBXBuildFile; fileRef = CDE8936C1CCA3C97005B8B03 /* ATSketchImage.m */; };
+		CDE893721CCA3DA3005B8B03 /* ATJSContext.h in Headers */ = {isa = PBXBuildFile; fileRef = CDE893711CCA3DA3005B8B03 /* ATJSContext.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,8 +35,11 @@
 		CD09B2501CB9BF4A00552508 /* ATContext2dJS.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ATContext2dJS.m; sourceTree = "<group>"; };
 		CD09B2531CB9CA1800552508 /* ATSketchCanvas.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ATSketchCanvas.h; sourceTree = "<group>"; };
 		CD09B2541CB9CA1800552508 /* ATSketchCanvas.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ATSketchCanvas.m; sourceTree = "<group>"; };
-		CD5F832A1CBD5F3A00F32689 /* ATSketchCanvasTarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ATSketchCanvasTarget.h; sourceTree = "<group>"; };
-		CD5F832B1CBD5F3A00F32689 /* ATSketchCanvasTarget.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ATSketchCanvasTarget.m; sourceTree = "<group>"; };
+		CDDB289B1CCD07C30004A1C6 /* ATSketchCanvasTarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ATSketchCanvasTarget.h; sourceTree = "<group>"; };
+		CDDB289C1CCD07C30004A1C6 /* ATSketchCanvasTarget.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ATSketchCanvasTarget.m; sourceTree = "<group>"; };
+		CDE8936B1CCA3C97005B8B03 /* ATSketchImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ATSketchImage.h; sourceTree = "<group>"; };
+		CDE8936C1CCA3C97005B8B03 /* ATSketchImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ATSketchImage.m; sourceTree = "<group>"; };
+		CDE893711CCA3DA3005B8B03 /* ATJSContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ATJSContext.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,8 +82,11 @@
 				CD09B2501CB9BF4A00552508 /* ATContext2dJS.m */,
 				CD09B2531CB9CA1800552508 /* ATSketchCanvas.h */,
 				CD09B2541CB9CA1800552508 /* ATSketchCanvas.m */,
-				CD5F832A1CBD5F3A00F32689 /* ATSketchCanvasTarget.h */,
-				CD5F832B1CBD5F3A00F32689 /* ATSketchCanvasTarget.m */,
+				CDE8936B1CCA3C97005B8B03 /* ATSketchImage.h */,
+				CDE8936C1CCA3C97005B8B03 /* ATSketchImage.m */,
+				CDE893711CCA3DA3005B8B03 /* ATJSContext.h */,
+				CDDB289B1CCD07C30004A1C6 /* ATSketchCanvasTarget.h */,
+				CDDB289C1CCD07C30004A1C6 /* ATSketchCanvasTarget.m */,
 			);
 			path = Context2d;
 			sourceTree = "<group>";
@@ -93,9 +102,11 @@
 				CD09B2401CB9BD5400552508 /* ATSketchInterface.h in Headers */,
 				CD09B2511CB9BF4A00552508 /* ATContext2dJS.h in Headers */,
 				CD09B2341CB9BC8F00552508 /* Context2d.h in Headers */,
-				CD5F832C1CBD5F3A00F32689 /* ATSketchCanvasTarget.h in Headers */,
+				CDDB289D1CCD07C30004A1C6 /* ATSketchCanvasTarget.h in Headers */,
 				CD09B24D1CB9BE5500552508 /* ATSketchContext2d.h in Headers */,
+				CDE893721CCA3DA3005B8B03 /* ATJSContext.h in Headers */,
 				CD09B2551CB9CA1800552508 /* ATSketchCanvas.h in Headers */,
+				CDE8936D1CCA3C97005B8B03 /* ATSketchImage.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -166,10 +177,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CDDB289E1CCD07C30004A1C6 /* ATSketchCanvasTarget.m in Sources */,
 				CD09B2561CB9CA1800552508 /* ATSketchCanvas.m in Sources */,
 				CD09B24E1CB9BE5500552508 /* ATSketchContext2d.m in Sources */,
+				CDE8936E1CCA3C97005B8B03 /* ATSketchImage.m in Sources */,
 				CD09B2521CB9BF4A00552508 /* ATContext2dJS.m in Sources */,
-				CD5F832D1CBD5F3A00F32689 /* ATSketchCanvasTarget.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -9,16 +9,13 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/Appkit.h>
 
+#import "ATJSContext.h"
 #import "ATSketchContext2d.h"
 #import "ATSketchInterface.h"
 #import "ATCOScriptInterface.h"
 
 #include <math.h>
 #include <float.h>
-
-#define ATJSContextThrowErrorString(errStr) \
-JSContext *context = [JSContext currentContext]; \
-context.exception = [JSValue valueWithNewErrorFromMessage:errStr inContext:context];
 
 #pragma mark - ATStylePart
 
@@ -87,62 +84,6 @@ context.exception = [JSValue valueWithNewErrorFromMessage:errStr inContext:conte
     return self;
 }
 @end
-
-#pragma mark - ATImage
-@implementation ATImage
-- (instancetype) init{
-    self = [super init];
-    if(self){
-        _src = @"";
-        _imageSrc = nil;
-        _image    = _imageSrc;
-    }
-    return self;
-}
-- (void) setSrc:(NSString *)src{
-    _src = src;
-    _imageSrc = [[NSImage alloc] initWithContentsOfFile:_src];
-    if(![_imageSrc isValid]){
-        NSString *msg = [NSString stringWithFormat:@"No valid image: %@", src];
-        ATJSContextThrowErrorString(msg);
-    }
-    _image    = _imageSrc;
-    _naturalSize.width  = [_image size].width;
-    _naturalSize.height = [_image size].height;
-}
-- (NSString *)src{
-    return _src;
-}
-- (unsigned long) naturalWidth{
-    return _naturalSize.width;
-}
-- (unsigned long) naturalHeight{
-    return _naturalSize.height;
-}
-- (void) resizeToWidth:(unsigned long) width andHeight:(unsigned long)height{
-    if(!_imageSrc){
-        return;
-    }
-    _image = [[NSImage alloc] initWithSize:NSMakeSize(width, height)];
-    [_image lockFocus];
-    [[NSGraphicsContext currentContext] setImageInterpolation:NSImageInterpolationHigh];
-    [_image drawAtPoint:NSZeroPoint fromRect:CGRectMake(0, 0, width, height) operation:NSCompositeCopy fraction:1.0];
-    [_image unlockFocus];
-}
-- (void) setWidth:(unsigned long)width{
-    [self resizeToWidth:width andHeight:self.height];
-}
-- (unsigned long) width{
-    return !_image ? 0 : [_image size].width;
-}
-- (void) setHeight:(unsigned long)height{
-    [self resizeToWidth:self.width andHeight:height];
-}
-- (unsigned long) height{
-    return !_image ? 0 : [_image size].height;
-}
-@end
-
 @interface ATRGBAColor
 @property (nonatomic) NSString* rgb;
 @property (nonatomic) CGFloat a;
@@ -508,7 +449,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     return gradient;
 }
 
-- (ATCanvasPattern *) createPatternWithImage:(ATImage *)image andRepetition:(NSString *)repetition{
+- (ATCanvasPattern *) createPatternWithImage:(ATSketchImage *)image andRepetition:(NSString *)repetition{
     ATCanvasPattern *pattern = [ATCanvasPattern new];
     return pattern;
 }
@@ -765,18 +706,28 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     // update fill
     if(fill && _stylePartFill.valid){
         id value = [_state objectForKey:kATStateFillStyle];
-        id ref   = _stylePartFill.ref = (!_stylePartFill.ref || _pathPaintCount > 0) ?
+        MSStyleFill* ref = _stylePartFill.ref = (!_stylePartFill.ref || _pathPaintCount > 0) ?
                                         [[_style fills] addNewStylePart] :
                                         _stylePartFill.ref;
         
+        //color string
         if([value isKindOfClass:[NSString class]]){
             [ref setColor: [self colorWithSVGStringWithGlobalAlpha:value]];
             [ref setFillType:0];
             
+        //gradient
         } else if([value isKindOfClass:[ATCanvasGradient class]]){
             MSGradient *gradient = [self gradientScaled:[value msgradient] bySize:[_layer bounds].size];
             [ref setGradient:gradient];
             [ref setFillType:1];
+            
+        //image
+        } else if([value isKindOfClass:[ATSketchImage class]]){
+            [ref setFillType:4];
+            [ref setPatternImage:[value image]];
+            [ref setPatternFillType:1];
+            
+            ATCOScriptPrint([value image]);
         }
         
         unsigned long long windingRule = [_pathWindingRule isEqualToString:kATWindingRuleNonZero] ? 0 : 1;
@@ -1197,6 +1148,53 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
             andDirtyX:(unsigned long long)dirtyX dirtyY:(unsigned long long)
        andDirtyWidth :(unsigned long long)width dirtyHeight:(unsigned long long)height{
     //TODO:add
+}
+
+#pragma mark - Image
+- (void) drawImage:(ATSketchImage *)image
+            fromSx:(CGFloat)sx sy:(CGFloat)sy
+             andSw:(CGFloat)sw sh:(CGFloat)sh
+              toDx:(CGFloat)dx dy:(CGFloat)dy
+             andDw:(CGFloat)dw dh:(CGFloat)dh{
+    if(!image || ![image imageData]){
+        return;
+    }
+    CGFloat imageWidth  = [image width];
+    CGFloat imageHeight = [image height];
+    
+    sx = fmaxf(isnan(sx) ? 0.0 : sx,0.0);
+    sy = fmaxf(isnan(sy) ? 0.0 : sy,0.0);
+    sw = fmaxf(isnan(sw) ? imageWidth  : sw, 0.0);
+    sh = fmaxf(isnan(sh) ? imageHeight : sh, 0.0);
+    
+    if (sw == 0.0 || sh == 0.0) {
+        return;
+    }
+    
+    dx = fmaxf(isnan(dx) ? sx : dx, 0.0);
+    dy = fmaxf(isnan(dy) ? sy : dy, 0.0);
+    dw = fmaxf(isnan(dw) ? sw : dw, 0.0);
+    dh = fmaxf(isnan(dh) ? sh : dh, 0.0);
+    
+    if(dw == 0.0 || dh == 0.0){
+        return;
+    }
+    
+    //paint input image original
+    if(sx == 0 && dx == sx &&
+       sy == 0 && dy == sy &&
+       sw == imageWidth  && dw == sw &&
+       sh == imageHeight && dh == sh){
+        [self save];
+        [self setFillStyle:image];
+        [self fillRectAtX:0 y:0 width:imageWidth height:imageHeight];
+        [self restore];
+        return;
+    }
+    
+    
+    
+    
 }
 
 
