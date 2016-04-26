@@ -37,6 +37,12 @@
 - (void)setX:(double)arg1;
 @end
 
+#pragma mark - Image
+#define MSImageData_Class NSClassFromString(@"MSImageData")
+@interface MSImageData : NSObject
+- (id)initWithImage:(id)arg1 convertColorSpace:(BOOL)arg2;
+@end
+
 #pragma mark - Layers & Groups
 
 #define MSMaskWithShape_Class NSClassFromString(@"MSMaskWithShape")
@@ -130,6 +136,8 @@
 @property(nonatomic) double noiseIntensity;
 @property(nonatomic) long long noiseIndex;
 @property(retain, nonatomic) id gradient;
+@property(retain, nonatomic) MSImageData *image;
+- (void)setPatternImage:(id)arg1;
 @end
 
 @interface MSStyleShadow
