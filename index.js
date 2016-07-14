@@ -45,7 +45,8 @@ function runScript(scriptPath, scriptSource, sourceMap, options){
 
     //http://mail.sketchplugins.com/pipermail/dev_sketchplugins.com/2014-August/000548.html
     //http://developer.sketchapp.com/code-examples/third-party-integrations/
-    var cmd = COSCRIPT_PATH + ' -e "[[[COScript app:\\"Sketch\\"] delegate] runPluginAtURL:[NSURL fileURLWithPath:\\""' + pluginCOPath + '"\\"]]"';
+    //var cmd = COSCRIPT_PATH + ' -e "[[[COScript app:\\"Sketch\\"] delegate] runPluginAtURL:[NSURL fileURLWithPath:\\""' + pluginCOPath + '"\\"]]"';
+    var cmd = COSCRIPT_PATH + ' -e "[[[COScript applicationOnPort:[NSString stringWithFormat:@\\"%@.JSTalk\\", @\\"com.bohemiancoding.sketch3\\"]] delegate] runPluginAtURL:[NSURL fileURLWithPath:\\""' + pluginCOPath + '"\\"]]"';
     exec(cmd, function(err, stdout, stderr){
         if(err || stderr){
             throw new Error(err || stderr);
