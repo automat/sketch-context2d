@@ -722,7 +722,8 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
         //image
         } else if([value isKindOfClass:[ATSketchImage class]]){
             [ref setFillType:4];
-            [ref setPatternImage:[value image]];
+            //temp
+            [ref setImage:[[MSImageData_Class alloc] initWithImage:[value image] convertColorSpace:NO]];
             [ref setPatternFillType:1];
             
             ATCOScriptPrint([value image]);
