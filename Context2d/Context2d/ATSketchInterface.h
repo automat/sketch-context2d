@@ -147,26 +147,10 @@
 - (void)setBlurRadius:(double)arg1;
 @end
 
-@interface MSBorderStyleCollection
-- (MSStyleBorder *) addNewStylePart;
-- (void) removeStylePart:(MSStyleBorder *)stylePart;
-@end
-
-@interface MSFillStyleCollection
-- (MSStyleFill *) addNewStylePart;
-- (void) removeStylePart:(MSStyleFill *)stylePart;
-@end
-
-@interface MSShadowStyleCollection
-- (MSStyleShadow *) addNewStylePart;
-- (void) removeStylePart:(MSStyleShadow *)stylePart;
-@end
-
 #define MSStyle_Class NSClassFromString(@"MSStyle")
 @interface MSStyle : NSObject
-@property(retain, nonatomic) MSBorderStyleCollection *borders;
-@property(retain, nonatomic) MSFillStyleCollection *fills;
-@property(retain, nonatomic) MSShadowStyleCollection *shadows;
+- (id) addStylePartOfType:(unsigned long long)arg1;
+- (id) stylePartsOfType:(unsigned long long)arg1;
 @property(retain, nonatomic) MSStyleBorderOptions *borderOptions;
 @end
 
