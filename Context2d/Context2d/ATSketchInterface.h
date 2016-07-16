@@ -80,7 +80,6 @@
 #define MSTextLayer_Class NSclassFromString(@"MSTextLayer")
 @interface MSTextLayer : MSLayer
 - (void)setFont:(id)arg1;
-- (void)setStringValueWithoutUndo:(id)arg1;
 - (void)setTextColor:(id)arg1;
 - (struct CGSize)textContainerSize;
 @property(readonly, nonatomic) NSBezierPath *bezierPath;
