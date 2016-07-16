@@ -136,7 +136,6 @@
 @property(nonatomic) long long noiseIndex;
 @property(retain, nonatomic) id gradient;
 @property(retain, nonatomic) MSImageData *image;
-- (void)setPatternImage:(id)arg1;
 @end
 
 @interface MSStyleShadow
