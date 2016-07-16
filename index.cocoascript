@@ -17,8 +17,17 @@ var page = document.currentPage();
 var artboard = page.currentArtboard();
 
 if(!artboard){
+    var msg;
+    //select first artboard available
+    if(__autoartboard__){
+        var artboards = document.artboards();
+        for(var i = 0; i < artboards.count(); ++i){
+            artboard = artboards[i];
+        }
+        msg = 'Document has no artboards.'
+    }
+    //create artboard
     if(__autocreate__){
-        //create artboard
         artboard = MSArtboardGroup.new();
         var frame = artboard.frame();
         frame.setX_(0);
@@ -26,26 +35,13 @@ if(!artboard){
         frame.setWidth_(800);
         frame.setHeight_(600);
         page.addLayers_([artboard]);
+    }
 
-    } else {
-        //select first artboard available
-        if(__autoartboard__){
-            var artboards = document.artboards();
-            for(var i = 0; i < artboards.count(); ++i){
-                artboard = artboards[i];
-            }
-            if(!artboard){
-                var msg = 'Document has no artboards.';
-                print(msg);
-                document.showMessage_(msg);
-                return;
-            }
-        } else {
-            var msg = 'No artboard selected.';
-            print(msg);
-            document.showMessage_(msg);
-            return;
-        }
+    if(!artboard){
+        msg = msg || 'Document has no artboards.';
+        print(msg);
+        document.showMessage_(msg);
+        return;
     }
 }
 
