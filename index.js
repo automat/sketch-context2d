@@ -11,7 +11,8 @@ const validateOptions = require('validate-option');
 
 const DEFAULT_OPTIONS = {
     autoStart    : true,
-    autoArtboard : false,
+    autoArtboard : true,
+    autoCreate   : true,
     verbose      : false,
     verboseLog   : false,
     recreate     : false,
@@ -29,7 +30,8 @@ function runScript(scriptPath, scriptSource, sourceMap, options){
     var plugin = fs.readFileSync(path.resolve(__dirname,'./index.cocoascript'), 'utf8')
         .replace(new RegExp('__dirname__', 'g'),     "'" + __dirname + "'")
         .replace(new RegExp('__scriptname__', 'g'),  "'" + name + "'")
-        .replace(new RegExp('__autoartboard__','g'), "'" + options.autoArtboard + "'")
+        .replace(new RegExp('__autoartboard__','g'), options.autoArtboard)
+        .replace(new RegExp('__autocreate__','g'),   options.autoCreate)
         .replace(new RegExp('__recreate__', 'g'),    options.recreate)
         .replace(new RegExp('__verbose__', 'g'),     options.verbose)
         .replace(new RegExp('__verboselog__', 'g'),  options.verboseLog)
