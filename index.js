@@ -10,11 +10,13 @@ const exec = require('child_process').exec;
 const validateOptions = require('validate-option');
 
 const DEFAULT_OPTIONS = {
-    verbose    : false,
-    verboseLog : false,
-    recreate   : false,
-    flatten    : false,
-    watch      : false
+    autoStart    : true,
+    autoArtboard : false,
+    verbose      : false,
+    verboseLog   : false,
+    recreate     : false,
+    flatten      : false,
+    watch        : false
 };
 
 const PLUGIN_DIR    = path.resolve(__dirname,'./plugin');
@@ -25,12 +27,13 @@ function runScript(scriptPath, scriptSource, sourceMap, options){
         name = name.substr(0, name.indexOf('.'));
 
     var plugin = fs.readFileSync(path.resolve(__dirname,'./index.cocoascript'), 'utf8')
-        .replace(new RegExp('__dirname__', 'g'), "'" + __dirname + "'")
-        .replace(new RegExp('__scriptname__', 'g'), "'" + name + "'")
-        .replace(new RegExp('__recreate__', 'g'),   options.recreate)
-        .replace(new RegExp('__verbose__', 'g'),    options.verbose)
-        .replace(new RegExp('__verboselog__', 'g'), options.verboseLog)
-        .replace(new RegExp('__flatten__', 'g'),    options.flatten);
+        .replace(new RegExp('__dirname__', 'g'),     "'" + __dirname + "'")
+        .replace(new RegExp('__scriptname__', 'g'),  "'" + name + "'")
+        .replace(new RegExp('__autoartboard__','g'), "'" + options.autoArtboard + "'")
+        .replace(new RegExp('__recreate__', 'g'),    options.recreate)
+        .replace(new RegExp('__verbose__', 'g'),     options.verbose)
+        .replace(new RegExp('__verboselog__', 'g'),  options.verboseLog)
+        .replace(new RegExp('__flatten__', 'g'),     options.flatten);
 
     try{
         fs.accessSync(PLUGIN_DIR, fs.F_OK)
@@ -45,8 +48,11 @@ function runScript(scriptPath, scriptSource, sourceMap, options){
 
     //http://mail.sketchplugins.com/pipermail/dev_sketchplugins.com/2014-August/000548.html
     //http://developer.sketchapp.com/code-examples/third-party-integrations/
-    //var cmd = COSCRIPT_PATH + ' -e "[[[COScript app:\\"Sketch\\"] delegate] runPluginAtURL:[NSURL fileURLWithPath:\\""' + pluginCOPath + '"\\"]]"';
-    var cmd = COSCRIPT_PATH + ' -e "[[[COScript applicationOnPort:[NSString stringWithFormat:@\\"%@.JSTalk\\", @\\"com.bohemiancoding.sketch3\\"]] delegate] runPluginAtURL:[NSURL fileURLWithPath:\\""' + pluginCOPath + '"\\"]]"';
+    var delegate =
+        options.autoStart ?
+        '[[COScript app:\\"Sketch\\"] delegate]' :
+        '[[COScript applicationOnPort:[NSString stringWithFormat:@\\"%@.JSTalk\\", @\\"com.bohemiancoding.sketch3\\"]] delegate]';
+    var cmd = COSCRIPT_PATH + ' -e "[' + delegate + ' runPluginAtURL:[NSURL fileURLWithPath:\\""' + pluginCOPath + '"\\"]]"';
     exec(cmd, function(err, stdout, stderr){
         if(err || stderr){
             throw new Error(err || stderr);
