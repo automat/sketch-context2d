@@ -1034,9 +1034,10 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 }
 
 - (MSTextLayer *)textLayerWithText:(NSString *)text atX:(CGFloat)x y:(CGFloat)y{
+    //deprecated
     MSTextLayer* textLayer = [_target addLayerOfType:@"text"];
     [textLayer setFont:_font];
-    [textLayer setStringValueWithoutUndo:text];
+    [textLayer setStringValue:text];
     [textLayer setName:text];
 
     CGPoint offset = [self offsetTextLayer:textLayer];
