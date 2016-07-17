@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const argv = require('minimist')(process.argv.slice(2));
+const path = require('path');
 
 //help
 if(argv['help']){
@@ -18,7 +19,8 @@ if(!argv._.length){
     return;
 }
 
-require('../index.js')([argv._[0]],{
+const file = path.resolve(argv._[0]);
+require('../index.js')([file],{
     verbose    : !!argv['verbose'],
     verboseLog : !!argv['verboseLog'],
     recreate   : !!argv['recreate'],
