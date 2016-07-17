@@ -15,7 +15,7 @@ if(argv['help']){
 
 if(!argv._.length){
     console.log('No js file passed.');
-    console.log('sketch-context2d pathToJsFile --help');
+    console.log('sketch-context2d path/to/file.js --help');
     return;
 }
 
