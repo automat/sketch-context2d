@@ -17,7 +17,8 @@ const DEFAULT_OPTIONS = {
     verboseLog   : false,
     recreate     : false,
     flatten      : false,
-    watch        : false
+    watch        : false,
+    maxBuffer    : 200 * 1024
 };
 
 const PLUGIN_DIR    = path.resolve(__dirname,'./plugin');
@@ -55,7 +56,7 @@ function runScript(scriptPath, scriptSource, sourceMap, options){
         '[[COScript app:\\"Sketch\\"] delegate]' :
         '[[COScript applicationOnPort:[NSString stringWithFormat:@\\"%@.JSTalk\\", @\\"com.bohemiancoding.sketch3\\"]] delegate]';
     var cmd = COSCRIPT_PATH + ' -e "[' + delegate + ' runPluginAtURL:[NSURL fileURLWithPath:\\""' + pluginCOPath + '"\\"]]"';
-    exec(cmd, function(err, stdout, stderr){
+    exec(cmd, {maxBuffer: options.maxBuffer},function(err, stdout, stderr){
         if(err || stderr){
             throw new Error(err || stderr);
         }
