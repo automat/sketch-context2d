@@ -11,8 +11,8 @@ const validateOptions = require('validate-option');
 
 const DEFAULT_OPTIONS = {
     autoStart    : true,
-    autoArtboard : true,
-    autoCreate   : true,
+    autoArtboard : false,
+    autoCreate   : false,
     verbose      : false,
     verboseLog   : false,
     recreate     : false,
