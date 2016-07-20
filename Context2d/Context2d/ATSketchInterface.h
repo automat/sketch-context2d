@@ -41,6 +41,9 @@
 #define MSImageData_Class NSClassFromString(@"MSImageData")
 @interface MSImageData : NSObject
 - (id)initWithImage:(id)arg1 convertColorSpace:(BOOL)arg2;
+@property(retain, nonatomic) NSImage *image;
+@property(retain, nonatomic) NSData *sha1;
+@property(retain, nonatomic) NSData *data;
 @end
 
 #pragma mark - Layers & Groups
