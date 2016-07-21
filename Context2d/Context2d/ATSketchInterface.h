@@ -41,6 +41,9 @@
 #define MSImageData_Class NSClassFromString(@"MSImageData")
 @interface MSImageData : NSObject
 - (id)initWithImage:(id)arg1 convertColorSpace:(BOOL)arg2;
+@property(retain, nonatomic) NSImage *image;
+@property(retain, nonatomic) NSData *sha1;
+@property(retain, nonatomic) NSData *data;
 @end
 
 #pragma mark - Layers & Groups
@@ -80,7 +83,6 @@
 #define MSTextLayer_Class NSclassFromString(@"MSTextLayer")
 @interface MSTextLayer : MSLayer
 - (void)setFont:(id)arg1;
-- (void)setStringValueWithoutUndo:(id)arg1;
 - (void)setTextColor:(id)arg1;
 - (struct CGSize)textContainerSize;
 @property(readonly, nonatomic) NSBezierPath *bezierPath;
@@ -137,7 +139,6 @@
 @property(nonatomic) long long noiseIndex;
 @property(retain, nonatomic) id gradient;
 @property(retain, nonatomic) MSImageData *image;
-- (void)setPatternImage:(id)arg1;
 @end
 
 @interface MSStyleShadow
@@ -147,26 +148,10 @@
 - (void)setBlurRadius:(double)arg1;
 @end
 
-@interface MSBorderStyleCollection
-- (MSStyleBorder *) addNewStylePart;
-- (void) removeStylePart:(MSStyleBorder *)stylePart;
-@end
-
-@interface MSFillStyleCollection
-- (MSStyleFill *) addNewStylePart;
-- (void) removeStylePart:(MSStyleFill *)stylePart;
-@end
-
-@interface MSShadowStyleCollection
-- (MSStyleShadow *) addNewStylePart;
-- (void) removeStylePart:(MSStyleShadow *)stylePart;
-@end
-
 #define MSStyle_Class NSClassFromString(@"MSStyle")
 @interface MSStyle : NSObject
-@property(retain, nonatomic) MSBorderStyleCollection *borders;
-@property(retain, nonatomic) MSFillStyleCollection *fills;
-@property(retain, nonatomic) MSShadowStyleCollection *shadows;
+- (id) addStylePartOfType:(unsigned long long)arg1;
+- (id) stylePartsOfType:(unsigned long long)arg1;
 @property(retain, nonatomic) MSStyleBorderOptions *borderOptions;
 @end
 

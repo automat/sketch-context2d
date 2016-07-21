@@ -1,5 +1,5 @@
 //https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation
-
+//TODO: Fix
 function main(canvas){
     var ctx = canvas.getContext("2d");
 

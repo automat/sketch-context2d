@@ -626,7 +626,6 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 
 - (void) addPathWithStylePartStroke:(BOOL)stroke fill:(BOOL)fill shadow:(BOOL)shadow{
     //todo: add style add if path has not been altered, no need to repaint same paths
-    
     //1 element + valid segments
     if ([_path elementCount] < 1 || !_pathDirty) {
         return;
@@ -640,7 +639,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
         
         [self resetLayerAndStyle];
     }
-
+    
     //transform
     NSAffineTransform *transform = [_state objectForKey:kATStateTransform];
     if(transform){
@@ -656,10 +655,9 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     // update stroke
     if(stroke && _stylePartStroke.valid){
         id value = [_state objectForKey:kATStateStrokeStyle];
-        id ref   = _stylePartStroke.ref = (!_stylePartStroke.ref || _pathPaintCount > 0) ?
-                                          [[_style borders] addNewStylePart] :
-                                          _stylePartStroke.ref;
-        
+        id ref = _stylePartStroke.ref = (!_stylePartStroke.ref || _pathPaintCount > 0) ?
+                                        [_style addStylePartOfType:1] :
+                                        _stylePartStroke.ref;
         if([value isKindOfClass:[NSString class]]){
             [ref setColor: [self colorWithSVGStringWithGlobalAlpha:value]];
             [ref setFillType:0];
@@ -671,7 +669,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
         }
         
         [ref setThickness:[[_state objectForKey:kATStateLineWidth] floatValue]];
-        
+       
         //update border options
         MSStyleBorderOptions *options = [_style borderOptions];
         
@@ -707,7 +705,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     if(fill && _stylePartFill.valid){
         id value = [_state objectForKey:kATStateFillStyle];
         MSStyleFill* ref = _stylePartFill.ref = (!_stylePartFill.ref || _pathPaintCount > 0) ?
-                                        [[_style fills] addNewStylePart] :
+                                        [_style addStylePartOfType:0] :
                                         _stylePartFill.ref;
         
         //color string
@@ -724,7 +722,8 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
         //image
         } else if([value isKindOfClass:[ATSketchImage class]]){
             [ref setFillType:4];
-            [ref setPatternImage:[value image]];
+            //temp
+            [ref setImage:[[MSImageData_Class alloc] initWithImage:[value image] convertColorSpace:NO]];
             [ref setPatternFillType:1];
             
             ATCOScriptPrint([value image]);
@@ -746,7 +745,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
         if(offsetX != 0.0 || offsetY != 0.0 || blur != 0.0){
             id ref = _stylePartShadow.ref = _stylePartShadow.ref ?
                                             _stylePartShadow.ref :
-                                            [[_style shadows] addNewStylePart];
+                                            [_style addStylePartOfType:2];
             [ref setColor: [self colorWithSVGStringWithGlobalAlpha:[_state objectForKey:kATStateShadowColor]]];
             [ref setOffsetX:offsetX];
             [ref setOffsetY:offsetY];
@@ -1036,9 +1035,10 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 }
 
 - (MSTextLayer *)textLayerWithText:(NSString *)text atX:(CGFloat)x y:(CGFloat)y{
+    //deprecated
     MSTextLayer* textLayer = [_target addLayerOfType:@"text"];
     [textLayer setFont:_font];
-    [textLayer setStringValueWithoutUndo:text];
+    [textLayer setStringValue:text];
     [textLayer setName:text];
 
     CGPoint offset = [self offsetTextLayer:textLayer];
@@ -1191,10 +1191,6 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
         [self restore];
         return;
     }
-    
-    
-    
-    
 }
 
 

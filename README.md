@@ -1,6 +1,6 @@
 *DRAFT – MORE TO COME*
 
-**COMPATIBLE WITH SKETCH 3.5.2**
+**COMPATIBLE WITH SKETCH 3.8**
 
 ![](./assets/cover-00.jpg)
 

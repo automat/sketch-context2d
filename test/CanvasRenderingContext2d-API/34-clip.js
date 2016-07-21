@@ -5,6 +5,7 @@ function main(canvas){
 
     // Create clipping region
     ctx.arc(100, 100, 75, 0, Math.PI*2);
+    //TODO: Clip without fill
     ctx.fill();
     ctx.clip();
 
