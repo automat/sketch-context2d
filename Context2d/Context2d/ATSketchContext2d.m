@@ -287,8 +287,8 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     _stylePartFill   = [ATStylePart new];
     _stylePartShadow = nil;
     
-    [_state setObject:_target forKey:kATStateGroup];
-    
+    _state[kATStateGroup] = _target;
+ 
     [self applyState:_state];
 }
 
@@ -330,12 +330,12 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     [self applyStateStyleParts:state];
     
     //transform
-    [_state setObject:[state[kATStateTransform] copy] forKey:kATStateTransform];
-
+    _state[kATStateTransform] = [state[kATStateTransform] copy];
+    
     //compositing
-    [self setGlobalAlpha:              [[state objectForKey:kATStateGlobalAlpha] floatValue]];
+    [self setGlobalAlpha:[[state objectForKey:kATStateGlobalAlpha] floatValue]];
     [self setGlobalCompositeOperation:[state objectForKey:kATStateGlobalCompositeOperation]];
-
+    
     //text
     [self setFont:        [state objectForKey:kATStateFont]];
     [self setTextAlign:   [state objectForKey:kATStateTextAlign]];
@@ -343,7 +343,10 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 }
 
 - (void) save{
-    [_stateStack addObject:[_state copy]];
+    //temp
+    [_stateStack addObject: [NSMutableDictionary dictionaryWithDictionary:_state]];
+    NSMutableDictionary* last = [_stateStack lastObject];
+    last[kATStateTransform] = [[NSAffineTransform alloc] initWithTransform:_state[kATStateTransform]];
 }
 
 - (void) restore{
@@ -355,16 +358,16 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 }
 
 - (void) setStatePropertyWithKey:(NSString *)stateKey value:(id)value{
-    [_statePrev setValue:[_state objectForKey:stateKey] forKey:stateKey];
-    [_state setValue:value forKey:stateKey];
+    _statePrev[stateKey] = [_state[stateKey] copy];
+    _state[stateKey] = value;
 }
 
 // updates a state value used by style parts, indicating if stylepart should be updated
 - (void) setStatePropertyWithKey:(NSString *)stateKey value:(id)value stylePart:(ATStylePart *)stylePart{
-    [_statePrev setValue:[_state objectForKey:stateKey] forKey:stateKey];
+    _statePrev[stateKey] = [_state[stateKey] copy];
     stylePart.dirty = YES;
     stylePart.valid = value != nil;
-    [_state setValue:value forKey:stateKey];
+    _state[stateKey] = value;
 }
 
 #pragma mark - Transformations
@@ -378,7 +381,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 }
 
 - (void) translateX:(CGFloat)x y:(CGFloat)y{
-    [[_state objectForKey:kATStateTransform] translateXBy:x yBy:y];
+    [_state[kATStateTransform] translateXBy:x yBy:y];
 }
 
 - (void) transformA:(CGFloat)a b:(CGFloat)b c:(CGFloat)c d:(CGFloat)d tx:(CGFloat)tx ty:(CGFloat)ty{
@@ -441,7 +444,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     ATCanvasGradient *gradient = [ATCanvasGradient new];
     MSGradient *msgradient = [gradient msgradient];
     [msgradient setGradientType:1];
-
+    
     //linear gradient from
     [msgradient setFrom:CGPointMake(x0, y0 + fabs(r1 - r0))];
     [msgradient setTo:CGPointMake(x1, y1)];
@@ -482,8 +485,8 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
                                     [operation isEqualToString:kATGlobalCompositeOperationLighter] ||
                                     [operation isEqualToString:kATGlobalCompositeOperationCopy] ||
                                     [operation isEqualToString:kATGlobalCompositeOperationXor]) ?
-                                   [kATGlobalCompositeOperationSourceOver copy] :
-                                   [operation copy]];
+     [kATGlobalCompositeOperationSourceOver copy] :
+     [operation copy]];
 }
 
 - (NSString*) globalCompositeOperation{
@@ -598,15 +601,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 
 #pragma mark - Path API
 
-/*
-- (ATRGBAColor *) parseRGBAString:(NSString*)rgba{
-   // ATRGBAColor *color = [ATRGBAColor new];
-    
-}
- */
-
 - (BOOL) isRGBAColor:(NSString*)color{
-    
     return false;
 }
 
@@ -656,8 +651,8 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     if(stroke && _stylePartStroke.valid){
         id value = [_state objectForKey:kATStateStrokeStyle];
         id ref = _stylePartStroke.ref = (!_stylePartStroke.ref || _pathPaintCount > 0) ?
-                                        [_style addStylePartOfType:1] :
-                                        _stylePartStroke.ref;
+        [_style addStylePartOfType:1] :
+        _stylePartStroke.ref;
         if([value isKindOfClass:[NSString class]]){
             [ref setColor: [self colorWithSVGStringWithGlobalAlpha:value]];
             [ref setFillType:0];
@@ -669,24 +664,24 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
         }
         
         [ref setThickness:[[_state objectForKey:kATStateLineWidth] floatValue]];
-       
+        
         //update border options
         MSStyleBorderOptions *options = [_style borderOptions];
         
         //lineCap
         NSString *lineCap  = [_state objectForKey:kATStateLineCap];
         unsigned long long lineCapStyle = [lineCap isEqualToString:kATLineCapRound]  ? 1 :
-                                          [lineCap isEqualToString:kATLineCapSquare] ? 2 :
-                                          0; //default: butt
+        [lineCap isEqualToString:kATLineCapSquare] ? 2 :
+        0; //default: butt
         [options setLineCapStyle:lineCapStyle];
         
         //lineJoin
         NSString *lineJoin = [_state objectForKey:kATStateLineJoin];
         unsigned long long lineJoinStyle = [lineJoin isEqualToString:kATLineJoinRound] ? 1 :
-                                           [lineJoin isEqualToString:kATLineJoinBevel] ? 2 :
-                                           0; //default: miter
+        [lineJoin isEqualToString:kATLineJoinBevel] ? 2 :
+        0; //default: miter
         [options setLineJoinStyle:lineJoinStyle];
-    
+        
         //lineDash
         NSArray *lineDash = [[_state objectForKey:kATStateLineDash] copy];
         //restrict to sketch just supporting 4 entries
@@ -705,28 +700,26 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     if(fill && _stylePartFill.valid){
         id value = [_state objectForKey:kATStateFillStyle];
         MSStyleFill* ref = _stylePartFill.ref = (!_stylePartFill.ref || _pathPaintCount > 0) ?
-                                        [_style addStylePartOfType:0] :
-                                        _stylePartFill.ref;
+        [_style addStylePartOfType:0] :
+        _stylePartFill.ref;
         
         //color string
         if([value isKindOfClass:[NSString class]]){
             [ref setColor: [self colorWithSVGStringWithGlobalAlpha:value]];
             [ref setFillType:0];
             
-        //gradient
+            //gradient
         } else if([value isKindOfClass:[ATCanvasGradient class]]){
             MSGradient *gradient = [self gradientScaled:[value msgradient] bySize:[_layer bounds].size];
             [ref setGradient:gradient];
             [ref setFillType:1];
             
-        //image
+            //image
         } else if([value isKindOfClass:[ATSketchImage class]]){
             [ref setFillType:4];
             //temp
             [ref setImage:[[MSImageData_Class alloc] initWithImage:[value image] convertColorSpace:NO]];
             [ref setPatternFillType:1];
-            
-            ATCOScriptPrint([value image]);
         }
         
         unsigned long long windingRule = [_pathWindingRule isEqualToString:kATWindingRuleNonZero] ? 0 : 1;
@@ -741,11 +734,11 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
         CGFloat offsetX = [[_state objectForKey:kATStateShadowOffsetX] floatValue];
         CGFloat offsetY = [[_state objectForKey:kATStateShadowOffsetY] floatValue];
         CGFloat blur    = [[_state objectForKey:kATStateShadowBlur] floatValue];
-     
+        
         if(offsetX != 0.0 || offsetY != 0.0 || blur != 0.0){
             id ref = _stylePartShadow.ref = _stylePartShadow.ref ?
-                                            _stylePartShadow.ref :
-                                            [_style addStylePartOfType:2];
+            _stylePartShadow.ref :
+            [_style addStylePartOfType:2];
             [ref setColor: [self colorWithSVGStringWithGlobalAlpha:[_state objectForKey:kATStateShadowColor]]];
             [ref setOffsetX:offsetX];
             [ref setOffsetY:offsetY];
@@ -830,7 +823,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     NSPoint cp2 = NSMakePoint(x +     ratio * (cpx - x),     y +     ratio * (cpy - y));
     
     [_path curveToPoint:cp3 controlPoint1:cp1 controlPoint2:cp2];
-  
+    
     [self markPathChanged];
 }
 
@@ -876,7 +869,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     if(!_path || _pathPaintCount > 0){ //can skip beginPath
         [self beginPath];
     }
-   
+    
     startAngle = startAngle * 180.0 / M_PI;
     endAngle   = endAngle   * 180.0 / M_PI;
     
@@ -902,8 +895,8 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
         return;
     }
     _pathWindingRule = ![rule isEqualToString:kATWindingRuleNonZero] && ![rule isEqualToString:kATWindingRuleEvenOdd] ?
-                        kATWindingRuleNonZero :
-                        rule;
+    kATWindingRuleNonZero :
+    rule;
     [self addPathWithStylePartStroke:NO fill:YES shadow:YES];
 }
 
@@ -919,12 +912,12 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
         _layerActive = _layer;
         _path  = nil;
     }
-
+    
     [MSMaskWithShape_Class toggleMaskForSingleShape:_layer];
-
+    
     MSLayerGroup *group = [MSLayerGroup_Class new];
     [_target removeLayer:_layer];
-
+    
     [group addLayers:@[_layer]];
     [_target addLayers:@[group]];
     
@@ -937,12 +930,12 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     if(font == [_state objectForKey:kATStateFont]){
         return;
     }
-
+    
     NSArray  *tokens = [font componentsSeparatedByString:@" "];
     NSString *strFamily;
     NSString *strSize;
     CGFloat  size;
-  
+    
     if([tokens count] < 2 || [tokens[0] rangeOfString:@"px"].location == NSNotFound){
         font    = [kATDefaultFont copy];
         tokens  = [font componentsSeparatedByString:@" "];
@@ -953,13 +946,13 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     
     strFamily = tokens[1];
     strFamily = [strFamily isEqualToString:kATFontSansSerif] ? kATFontSansSerifFont :
-                [strFamily isEqualToString:kATFontSerif]     ? kATFontSerifFont :
-                [strFamily isEqualToString:kATFontMonospace] ? kATFontMonospaceFont :
-                strFamily;
-
+    [strFamily isEqualToString:kATFontSerif]     ? kATFontSerifFont :
+    [strFamily isEqualToString:kATFontMonospace] ? kATFontMonospaceFont :
+    strFamily;
+    
     _font = [NSFont fontWithName:strFamily size:size];
     _fontMetrics = [ATFontMetrics metricsWithFont:_font];
-    [_state setObject: [font copy] forKey:kATStateFont];
+    _state[kATStateFont] = [font copy];
 }
 
 - (NSString*) font{
@@ -967,17 +960,16 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 }
 
 - (void) setTextAlign:(NSString *)textAlign{
-    if(textAlign == [_state objectForKey:kATStateTextAlign]){
+    if([textAlign isEqualToString: _state[kATStateTextAlign]]){
         return;
     }
-    [_state setObject:!([textAlign isEqualToString:kATTextAlignStart] &&
-                        [textAlign isEqualToString:kATTextAlignEnd] &&
-                        [textAlign isEqualToString:kATTextAlignLeft] &&
-                        [textAlign isEqualToString:kATTextAlignRight] &&
-                        [textAlign isEqualToString:kATTextAlignCenter]) ?
-                        [textAlign copy] :
-                        [kATTextAlignStart copy]
-               forKey:kATStateTextAlign];
+    //fall back to kATTextAlignStart if no valid alignment
+    BOOL isValid = [textAlign isEqualToString:kATTextAlignStart] ||
+                   [textAlign isEqualToString:kATTextAlignEnd] ||
+                   [textAlign isEqualToString:kATTextAlignLeft] ||
+                   [textAlign isEqualToString:kATTextAlignRight] ||
+                   [textAlign isEqualToString:kATTextAlignCenter];
+    _state[kATStateTextAlign] = isValid ? [textAlign copy] : [kATTextAlignStart copy];
 }
 
 - (NSString *)textAlign{
@@ -985,18 +977,17 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 }
 
 - (void) setTextBaseline:(NSString *)textBaseline{
-    if(textBaseline == [_state objectForKey:kATStateTextBaseline]){
+    if([textBaseline isEqualToString: _state[kATStateTextBaseline]]){
         return;
     }
-    [_state setObject:!([textBaseline isEqualToString:kATTextBaselineTop] &&
-                        [textBaseline isEqualToString:kATTextBaselineHanging] &&
-                        [textBaseline isEqualToString:kATTextBaselineMiddle] &&
-                        [textBaseline isEqualToString:kATTextBaselineAlphabetic] &&
-                        [textBaseline isEqualToString:kATTextBaselineIdeographic] &&
-                        [textBaseline isEqualToString:kATTextBaselineBottom]) ?
-                        [textBaseline copy] :
-                        [kATTextBaselineAlphabetic copy]
-               forKey:kATStateTextBaseline];
+    //fall back to kATTextBaselineAlphabetic if no valid alignment
+    BOOL isValid = [textBaseline isEqualToString:kATTextBaselineTop] ||
+                   [textBaseline isEqualToString:kATTextBaselineHanging] ||
+                   [textBaseline isEqualToString:kATTextBaselineMiddle] ||
+                   [textBaseline isEqualToString:kATTextBaselineAlphabetic] ||
+                   [textBaseline isEqualToString:kATTextBaselineIdeographic] ||
+                   [textBaseline isEqualToString:kATTextBaselineBottom];
+    _state[kATStateTextBaseline] = isValid ? [textBaseline copy] : [kATTextBaselineAlphabetic copy];
 }
 
 - (NSString *)textBaseline{
@@ -1039,13 +1030,13 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     [textLayer setFont:_font];
     [textLayer setStringValue:text];
     [textLayer setName:text];
-
+    
     CGPoint offset = [self offsetTextLayer:textLayer];
-
+    
     //TODO: Add transform
     [[textLayer frame] setX:x + offset.x];
     [[textLayer frame] setY:y + offset.y];
-
+    
     return textLayer;
 }
 
@@ -1115,7 +1106,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     
     //FIXME: Create textlayer without adding to group
     [_target removeLayer:textLayer];
-
+    
 }
 
 - (CGFloat) measureText_internal:(NSString *)text{
