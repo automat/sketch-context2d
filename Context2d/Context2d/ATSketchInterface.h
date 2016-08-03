@@ -67,6 +67,7 @@
 
 @interface MSLayer
 @property(retain, nonatomic) MSRect *frame;
+- (id)initWithFrame:(struct CGRect)arg1;
 - (void)setName:(id)arg1;
 @end
 
@@ -74,13 +75,12 @@
 @interface MSLayerGroup : NSObject
 //MSLayer
 @property(retain, nonatomic) MSRect *frame;
-- (id) addLayerOfType:(id)arg1;
 - (void) addLayers:(NSArray* )layers;
 - (BOOL)resizeToFitChildrenWithOption:(long long)arg1;
 - (void)removeLayer:(id)arg1;
 @end
 
-#define MSTextLayer_Class NSclassFromString(@"MSTextLayer")
+#define MSTextLayer_Class NSClassFromString(@"MSTextLayer")
 @interface MSTextLayer : MSLayer
 - (void)setFont:(id)arg1;
 - (void)setTextColor:(id)arg1;
