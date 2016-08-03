@@ -162,16 +162,7 @@ if(__flatten__){
 target.select_byExpandingSelection_(true,false);
 
 if(!!__verbose__){
-    function pad(num, size){
-        var str = '' + num;
-        while(str.length < size){
-            str = '0' + str;
-        }
-        return str;
-    }
-
-    var duration = new Date(new Date().getTime() - time);
-    print('Script end: ' + pad(Math.max(duration.getHours()-1,0),2) + ':' +
-                           pad(duration.getMinutes(),2) + ':' +
-                           pad(duration.getSeconds(),2));
+    var duration = '' + (new Date(new Date().getTime() - time) / 1000);
+    duration = duration.substr(0,duration.indexOf('.') + 3);
+    print('Script end: ' + duration + 's');
 }
