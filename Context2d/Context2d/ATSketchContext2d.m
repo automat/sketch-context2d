@@ -1027,6 +1027,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 
 - (MSTextLayer *)textLayerWithText:(NSString *)text atX:(CGFloat)x y:(CGFloat)y{
     MSTextLayer *textLayer = [[MSTextLayer_Class alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
+    [_group addLayers:@[textLayer]];
     [textLayer setFont:_font];
     [textLayer setStringValue:text];
     [textLayer setName:text];
@@ -1047,13 +1048,13 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     MSTextLayer *textLayer = [self textLayerWithText:text atX:x y:y];
     if(!_useTextLayerShapes){
         //translation only
-        NSAffineTransform *transform = [_state objectForKey:@"transform"];
+        NSAffineTransform *transform = _state[kATStateTransform];
         CGPoint origin = [transform transformPoint:[[textLayer frame] origin]];
         [[textLayer frame] setX:origin.x];
         [[textLayer frame] setY:origin.y];
         
         //textcolor from fill
-        [textLayer setTextColor:[self colorWithSVGStringWithGlobalAlpha:[_state objectForKey:kATStateFillStyle]]];
+        [textLayer setTextColor:[self colorWithSVGStringWithGlobalAlpha:_state[kATStateFillStyle]]];
         
         if(!isnan(maxWidth)){
             //TODO: Add max width here,textLayer => GroupShape => skew, actual usecase?
