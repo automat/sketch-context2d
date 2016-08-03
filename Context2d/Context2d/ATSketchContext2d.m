@@ -1035,8 +1035,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 }
 
 - (MSTextLayer *)textLayerWithText:(NSString *)text atX:(CGFloat)x y:(CGFloat)y{
-    //deprecated
-    MSTextLayer* textLayer = [_target addLayerOfType:@"text"];
+    MSTextLayer *textLayer = [[MSTextLayer_Class alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
     [textLayer setFont:_font];
     [textLayer setStringValue:text];
     [textLayer setName:text];
