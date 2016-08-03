@@ -4,6 +4,8 @@ const path = require('path');
 
 //help
 if(argv['help']){
+    console.log('');
+    console.log('Usage: sketch-context2d path/to/file.js [options]\n');
     console.log('--help           ','Show all argument options');
     console.log('--verbose        ','Log process');
     console.log('--log-verbose    ','Log js script line number and columns');
@@ -13,6 +15,7 @@ if(argv['help']){
     console.log('--max-buffer     ','Largest amount of data (in bytes) allowed on stdout or stderr. (Default: 200*1024)');
     console.log('--watch          ','Watch js script');
     console.log('');
+    return;
 }
 
 if(!argv._.length){
