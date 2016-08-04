@@ -1153,8 +1153,8 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
     CGFloat imageWidth  = [image width];
     CGFloat imageHeight = [image height];
     
-    sx = fmaxf(isnan(sx) ? 0.0 : sx,0.0);
-    sy = fmaxf(isnan(sy) ? 0.0 : sy,0.0);
+    sx = isnan(sx) ? 0.0 : sx;
+    sy = isnan(sy) ? 0.0 : sy;
     sw = fmaxf(isnan(sw) ? imageWidth  : sw, 0.0);
     sh = fmaxf(isnan(sh) ? imageHeight : sh, 0.0);
     
@@ -1162,8 +1162,8 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
         return;
     }
     
-    dx = fmaxf(isnan(dx) ? sx : dx, 0.0);
-    dy = fmaxf(isnan(dy) ? sy : dy, 0.0);
+    dx = isnan(dx) ? sx : dx;
+    dy = isnan(dy) ? sy : dy;
     dw = fmaxf(isnan(dw) ? sw : dw, 0.0);
     dh = fmaxf(isnan(dh) ? sh : dh, 0.0);
     
@@ -1171,17 +1171,69 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
         return;
     }
     
-    //paint input image original
+    NSAffineTransform *transform = _state[kATStateTransform];
+    
+    //state stack independent
+    MSLayerGroup *target = _target;
+    MSShapeGroup *layer;
+    NSBezierPath *path;
+    MSStyle *style = [MSStyle_Class new];
+    MSStyleFill *fill = [style addStylePartOfType:0];
+    [fill setFillType:4];
+    [fill setImage:[image imageData]];
+    
+    //original input image
     if(sx == 0 && dx == sx &&
        sy == 0 && dy == sy &&
        sw == imageWidth  && dw == sw &&
        sh == imageHeight && dh == sh){
-        [self save];
-        [self setFillStyle:image];
-        [self fillRectAtX:0 y:0 width:imageWidth height:imageHeight];
-        [self restore];
+        path = [NSBezierPath bezierPathWithRect:CGRectMake(0, 0, imageWidth, imageHeight)];
+        //fit, orginal aspect ratio and size
+        [fill setPatternFillType:1];
+    //destination size differs, possible offset
+    } else if(sx == dx &&
+              sy == dy &&
+              sw != imageWidth && dw == sw &&
+              sh != imageHeight && dh == sh){
+        path = [NSBezierPath bezierPathWithRect:CGRectMake(sx, sy, sw, sh)];
+        //stretch to fit target size
+        [fill setPatternFillType:2];
+    //source & destination offset & size
+    } else if(sx != dx || sy != dy || sw != dw || sh != dh){
+        //clip layer
+        NSBezierPath *clipPath = [NSBezierPath bezierPathWithRect:CGRectMake(dx, dy, dw, dh)];
+        MSShapeGroup *clipLayer = [MSShapeGroup_Class shapeWithBezierPath:clipPath];
+        //clip container
+        [MSMaskWithShape_Class toggleMaskForSingleShape: clipLayer];
+        MSLayerGroup *clipGroup = [MSLayerGroup_Class new];
+        [clipGroup addLayers:@[clipLayer]];
+        //image path layer
+        CGFloat x = dx + sy;
+        CGFloat y = dy + sy;
+        CGFloat w = imageWidth * (dw / sw);
+        CGFloat h = imageHeight * (dh / sh);
+        path = [NSBezierPath bezierPathWithRect:CGRectMake(x, y, w, h)];
+        //destination clip container
+        target = clipGroup;
+        //stretch to fit target size
+        [fill setPatternFillType:2];
+    } else {
+        //invalid
         return;
     }
+    
+    //TODO: Transform layer not shape
+    [path transformUsingAffineTransform:transform];
+    layer = [MSShapeGroup_Class shapeWithBezierPath: path];
+    [layer setStyle:style];
+    [target addLayers:@[layer]];
+    
+    //clip group
+    if(target != _target){
+        [_target addLayers:@[target]];
+    }
+    
+    [self updateGroupBounds];
 }
 
 
