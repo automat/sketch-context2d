@@ -37,13 +37,27 @@
 - (void)setX:(double)arg1;
 @end
 
-#pragma mark - Image
+#pragma mark - ImageData
+@interface MSImageCollection
+@property(readonly, nonatomic) NSDictionary *images;
+@end
+
 #define MSImageData_Class NSClassFromString(@"MSImageData")
 @interface MSImageData : NSObject
 - (id)initWithImage:(id)arg1 convertColorSpace:(BOOL)arg2;
 @property(retain, nonatomic) NSImage *image;
 @property(retain, nonatomic) NSData *sha1;
 @property(retain, nonatomic) NSData *data;
+@end
+
+#pragma mark - Document
+#define MSDocument_Class NSClassFromString(@"MSDocument")
+@interface MSDocument
++(id)currentDocument;
+@end
+
+@interface MSDocumentData
+@property(readonly, nonatomic) MSImageCollection *images;
 @end
 
 #pragma mark - Layers & Groups
@@ -57,27 +71,27 @@
 + (id)createMaskWithShapeForLayers:(id)arg1;
 @end
 
-#define MSShapeGroup_Class NSClassFromString(@"MSShapeGroup")
-@interface MSShapeGroup
-@property(nonatomic) unsigned long long windingRule;
-@property(readonly, nonatomic) struct CGRect bounds;
-+ (id) shapeWithBezierPath:(NSBezierPath *) path;
-- (void) setStyle:(id)style;
-@end
-
-@interface MSLayer
+@interface MSLayer : NSObject
 @property(retain, nonatomic) MSRect *frame;
 - (id)initWithFrame:(struct CGRect)arg1;
 - (void)setName:(id)arg1;
 @end
 
 #define MSLayerGroup_Class NSClassFromString(@"MSLayerGroup")
-@interface MSLayerGroup : NSObject
+@interface MSLayerGroup : MSLayer
 //MSLayer
 @property(retain, nonatomic) MSRect *frame;
 - (void) addLayers:(NSArray* )layers;
 - (BOOL)resizeToFitChildrenWithOption:(long long)arg1;
 - (void)removeLayer:(id)arg1;
+@end
+
+#define MSShapeGroup_Class NSClassFromString(@"MSShapeGroup")
+@interface MSShapeGroup : MSLayerGroup
+@property(nonatomic) unsigned long long windingRule;
+@property(readonly, nonatomic) struct CGRect bounds;
++ (id) shapeWithBezierPath:(NSBezierPath *) path;
+- (void) setStyle:(id)style;
 @end
 
 #define MSTextLayer_Class NSClassFromString(@"MSTextLayer")
@@ -139,6 +153,7 @@
 @property(nonatomic) long long noiseIndex;
 @property(retain, nonatomic) id gradient;
 @property(retain, nonatomic) MSImageData *image;
+
 @end
 
 @interface MSStyleShadow
