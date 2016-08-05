@@ -24,7 +24,7 @@
 }
 - (instancetype) copyWithZone:(NSZone *)zone{
     ATSketchImage *image = [ATSketchImage new];
-    [image setSrc:_src];
+    image->_src = [_src copy];
     [image setWidth: [self width]];
     [image setHeight:[self height]];
     return image;
