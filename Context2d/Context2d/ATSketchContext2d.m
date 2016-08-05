@@ -229,6 +229,45 @@ static NSString *const kATRepetitionRepeatX = @"repeat-x";
 static NSString *const kATRepetitionRepeatY = @"repeat-y";
 static NSString *const kATRepetitionNoRepeat = @"no-repeat";
 
+@interface ATSketchPropertyValue : NSObject
++ (NSDictionary *) blendMode;
+@end
+
+@implementation ATSketchPropertyValue
++ (NSDictionary *) blendMode{
+    static NSDictionary *dict;
+    static dispatch_once_t once;
+    dispatch_once(&once,^{
+        dict = @{
+                 kATGlobalCompositeOperationSourceOver : @0,
+                 kATGlobalCompositeOperationDarken: @1,
+                 kATGlobalCompositeOperationMultiply: @2,
+                 kATGlobalCompositeOperationColorBurn: @3,
+                 kATGlobalCompositeOperationLighten: @4,
+                 kATGlobalCompositeOperationScreen: @5,
+                 kATGlobalCompositeOperationColorDodge: @6,
+                 kATGlobalCompositeOperationOverlay: @7,
+                 kATGlobalCompositeOperationSoftLight: @8,
+                 kATGlobalCompositeOperationHardLight: @9,
+                 kATGlobalCompositeOperationDifference: @10,
+                 kATGlobalCompositeOperationExclusion: @11,
+                 kATGlobalCompositeOperationHue: @12,
+                 kATGlobalCompositeOperationSaturation: @13,
+                 kATGlobalCompositeOperationColor: @14,
+                 kATGlobalCompositeOperationLuminosity: @15,
+                 kATGlobalCompositeOperationSourceIn : @16,
+                 kATGlobalCompositeOperationSourceOut: @17,
+                 kATGlobalCompositeOperationSourceAtop: @18,
+                 kATGlobalCompositeOperationDestinationOver: @19,
+                 kATGlobalCompositeOperationDestinationIn: @20,
+                 kATGlobalCompositeOperationDestinationOut: @21,
+                 kATGlobalCompositeOperationDestinationAtop: @22
+                 };
+    });
+    return dict;
+}
+@end
+
 @implementation ATSketchContext2d
 
 @synthesize useTextLayerShapes = _useTextLayerShapes;
@@ -344,7 +383,7 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
     
     //compositing
     [self setGlobalAlpha:[state[kATStateGlobalAlpha] floatValue]];
-    [self setGlobalCompositeOperation:state[kATStateGlobalCompositeOperation]];
+    [self setGlobalCompositeOperation:[state[kATStateGlobalCompositeOperation] copy]];
     
     //text
     [self setFont:        state[kATStateFont]];
@@ -492,20 +531,13 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
 
 // (default: "source-over")
 - (void) setGlobalCompositeOperation:(NSString *)operation{
-    [self setStatePropertyWithKey:kATStateGlobalCompositeOperation
-                            value:!([operation isEqualToString:kATGlobalCompositeOperationSourceAtop] ||
-                                    [operation isEqualToString:kATGlobalCompositeOperationSourceIn] ||
-                                    [operation isEqualToString:kATGlobalCompositeOperationSourceOut] ||
-                                    [operation isEqualToString:kATGlobalCompositeOperationSourceOver] ||
-                                    [operation isEqualToString:kATGlobalCompositeOperationDestinationAtop] ||
-                                    [operation isEqualToString:kATGlobalCompositeOperationDestinationIn] ||
-                                    [operation isEqualToString:kATGlobalCompositeOperationDestinationOut] ||
-                                    [operation isEqualToString:kATGlobalCompositeOperationDestinationOver] ||
-                                    [operation isEqualToString:kATGlobalCompositeOperationLighter] ||
-                                    [operation isEqualToString:kATGlobalCompositeOperationCopy] ||
-                                    [operation isEqualToString:kATGlobalCompositeOperationXor]) ?
-     [kATGlobalCompositeOperationSourceOver copy] :
-     [operation copy]];
+    NSDictionary *blendMode = [ATSketchPropertyValue blendMode];
+    if(![blendMode objectForKey:operation]){
+        NSString *msg = [NSString stringWithFormat:@"Unsupported globalCompositeOperation \"%@\"", operation];
+        ATCOScriptPrint(msg);
+        return;
+    }
+    [self setStatePropertyWithKey:kATStateGlobalCompositeOperation value:[operation copy]];
 }
 
 - (NSString*) globalCompositeOperation{
@@ -644,6 +676,11 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
     if ([_path elementCount] < 1 || !_pathDirty) {
         return;
     }
+    
+    //set layer blendMode
+    NSString *globalCompositeOperation = _state[kATStateGlobalCompositeOperation];
+    unsigned long blendMode = [[ATSketchPropertyValue blendMode][globalCompositeOperation] unsignedLongLongValue];
+    [[_style contextSettings] setBlendMode: blendMode];
     
     //already stroked path, need to copy path and paint on top
     if(fill && _stylePartStroke.ref){
