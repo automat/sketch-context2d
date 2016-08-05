@@ -26,7 +26,7 @@
 | [x]     | 14     | fillStyle | - |
 | [x]     | 15     | strokeStyke | - |
 | [x]     | 16     | createLinearGradient | - |
-| **[o]** | **17** | **createRadialGradient** | currently only works if outer/inner radius have same origin |
+| **[o]** | **17** | **createRadialGradient** | end-radius not supported by Sketch |
 | **[o]** | **18** | **createPattern** | repetition property `repeat-x`, `repeat-y` not supported by Sketch  |
 | [x]     | 19     | shadowBlur | - |
 | [x]     | 20     | shadowColor | - |
@@ -50,7 +50,7 @@
 | [x]     | 38     | transform | - |
 | [x]     | 39     | setTransform | - |
 | [x]     | 40     | globalAlpha | - |
-| **[_]** | **41** | **globalCompositeOperation** | - |
+| **[o]** | **41** | **globalCompositeOperation** | Shared blendMode on layer for stroke and fill, blendModes not supported by Sketch: `lighter`,`copy`,`xor`|
 | [x]     | 42     | drawImage | - |
 | **[o]** | **43** | **createImageData** | stub |
 | **[o]** | **44** | **getImageData** | stub |
