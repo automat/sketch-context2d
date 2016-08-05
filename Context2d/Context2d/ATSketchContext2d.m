@@ -56,15 +56,19 @@
 
 - (instancetype) copyWithZone:(NSZone *)zone{
     ATCanvasGradient *copy = [ATCanvasGradient new];
-    if(copy){
-        [copy setMsgradient:_msgradient];
-    }
+    copy->_msgradient = self->_msgradient;
     return copy;
 }
 @end
 
-#pragma mark - ATCanvasPatter
+#pragma mark - ATCanvasPattern
 @implementation ATCanvasPattern
+-(instancetype) copyWithZone:(NSZone *)zone{
+    ATCanvasPattern *copy = [ATCanvasPattern new];
+    copy->_image = self->_image;
+    copy->_repetition = [self->_repetition copy];
+    return copy;
+}
 @end
 
 #pragma mark - ATImageData
@@ -219,6 +223,12 @@ static NSString *const kATTextBaselineAlphabetic  = @"alphabetic";
 static NSString *const kATTextBaselineIdeographic = @"ideographic";
 static NSString *const kATTextBaselineBottom      = @"bottom";
 
+//pattern repetition
+static NSString *const kATRepetitionRepeat = @"repeat";
+static NSString *const kATRepetitionRepeatX = @"repeat-x";
+static NSString *const kATRepetitionRepeatY = @"repeat-y";
+static NSString *const kATRepetitionNoRepeat = @"no-repeat";
+
 @implementation ATSketchContext2d
 
 @synthesize useTextLayerShapes = _useTextLayerShapes;
@@ -364,7 +374,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 
 // updates a state value used by style parts, indicating if stylepart should be updated
 - (void) setStatePropertyWithKey:(NSString *)stateKey value:(id)value stylePart:(ATStylePart *)stylePart{
-    _statePrev[stateKey] = [_state[stateKey] copy];
+    _statePrev[stateKey] = _state[stateKey];
     stylePart.dirty = YES;
     stylePart.valid = value != nil;
     _state[stateKey] = value;
@@ -454,6 +464,15 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 
 - (ATCanvasPattern *) createPatternWithImage:(ATSketchImage *)image andRepetition:(NSString *)repetition{
     ATCanvasPattern *pattern = [ATCanvasPattern new];
+    [pattern setImage:image];
+    //repeat-x, repeat-y not supported by Sketch
+    NSString* repetition_ =
+        (!repetition ||
+         (![repetition isEqualToString:kATRepetitionRepeat] &&
+         ![repetition isEqualToString:kATRepetitionNoRepeat])) ?
+    [kATRepetitionRepeat copy] :
+    repetition;
+    [pattern setRepetition:repetition_];
     return pattern;
 }
 
@@ -694,6 +713,27 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
             lineDash = [NSArray arrayWithArray:temp];
         }
         [options setDashPattern:lineDash];
+        
+        if([value isKindOfClass:[ATCanvasPattern class]]){
+            //valid outline
+            if([_layer canConvertToOutlines]){
+                ATCanvasPattern *pattern = value;
+                //create outline
+                MSShapeGroup *outlinePath = [_layer outlineShapeWithBorder:ref];
+                //create isolated fill style
+                MSStyle *style = [MSStyle_Class new];
+                MSStyleFill *fill = [style addStylePartOfType:0];
+                [fill setFillType:4];
+                [fill setImage:[[pattern image] imageData]];
+                [fill setPatternFillType: [[pattern repetition] isEqualToString:kATRepetitionRepeat] ? 0 : 1];
+                [outlinePath setStyle:style];
+                //add new outline path, keep reference path
+                [_target addLayers:@[outlinePath]];
+            //invalid outline
+            } else {
+                ATCOScriptPrint(@"Unable to transform path to outlines.");
+            }
+        }
     }
     
     // update fill
@@ -705,21 +745,19 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
         
         //color string
         if([value isKindOfClass:[NSString class]]){
-            [ref setColor: [self colorWithSVGStringWithGlobalAlpha:value]];
             [ref setFillType:0];
-            
-            //gradient
+            [ref setColor: [self colorWithSVGStringWithGlobalAlpha:value]];
+        //gradient
         } else if([value isKindOfClass:[ATCanvasGradient class]]){
+            [ref setFillType:1];
             MSGradient *gradient = [self gradientScaled:[value msgradient] bySize:[_layer bounds].size];
             [ref setGradient:gradient];
-            [ref setFillType:1];
-            
-            //image
-        } else if([value isKindOfClass:[ATSketchImage class]]){
+        //pattern
+        } else if([value isKindOfClass:[ATCanvasPattern class]]){
             [ref setFillType:4];
-            //temp
-            [ref setImage:[[MSImageData_Class alloc] initWithImage:[value image] convertColorSpace:NO]];
-            [ref setPatternFillType:1];
+            ATCanvasPattern *pattern = value;
+            [ref setImage:[[pattern image] imageData]];
+            [ref setPatternFillType: [[pattern repetition] isEqualToString:kATRepetitionRepeat] ? 0 : 1];
         }
         
         unsigned long long windingRule = [_pathWindingRule isEqualToString:kATWindingRuleNonZero] ? 0 : 1;
