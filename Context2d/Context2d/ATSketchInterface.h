@@ -136,6 +136,10 @@
 - (id) initBlankGradient;
 @end
 
+@interface MSGraphicsContextSettings
+@property(nonatomic) long long blendMode;
+@end
+
 @interface MSStyleBorder
 @property(nonatomic) double thickness;
 @property(copy, nonatomic) MSColor *color;
@@ -156,7 +160,6 @@
 @property(nonatomic) long long noiseIndex;
 @property(retain, nonatomic) id gradient;
 @property(retain, nonatomic) MSImageData *image;
-
 @end
 
 @interface MSStyleShadow
@@ -171,6 +174,7 @@
 - (id) addStylePartOfType:(unsigned long long)arg1;
 - (id) stylePartsOfType:(unsigned long long)arg1;
 @property(retain, nonatomic) MSStyleBorderOptions *borderOptions;
+@property(retain, nonatomic) MSGraphicsContextSettings *contextSettings;
 @end
 
 
