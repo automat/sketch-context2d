@@ -1122,7 +1122,7 @@ static NSString *const kATTextBaselineBottom      = @"bottom";
 
 #pragma mark - ImageData
 
-- (ATImageData *)createImageDataWidthWidth:(unsigned long long)width andHeight:(unsigned long long)height{
+- (ATImageData *)createImageDataWithWidth:(unsigned long long)width andHeight:(unsigned long long)height{
     ATImageData *imageData = [ATImageData new];
     //TODO: add
     return imageData;

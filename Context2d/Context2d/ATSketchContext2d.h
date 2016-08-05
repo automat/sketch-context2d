@@ -190,7 +190,7 @@ JSExportAs(strokeText,
 
 #pragma mark - ImageData
 JSExportAs(createImageData,
-- (ATImageData *) createImageDataWidthWidth:(unsigned long long)width andHeight:(unsigned long long)height
+- (ATImageData *) createImageDataWithWidth:(unsigned long long)width andHeight:(unsigned long long)height
 );
 JSExportAs(getImageData,
 - (ATImageData *) getImageDataWithX:(unsigned long long)x y:(unsigned long long)y
