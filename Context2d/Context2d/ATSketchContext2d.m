@@ -17,6 +17,167 @@
 #include <math.h>
 #include <float.h>
 
+#pragma mark - LU
+
+//state
+static NSString *const kATStateGroup = @"group";
+//style, color
+static NSString *const kATStateFillStyle   = @"fillStyle";
+static NSString *const kATStateStrokeStyle = @"strokeStyle";
+static NSString *const kATStateTransform   = @"transform";
+//compositing
+static NSString *const kATStateGlobalAlpha = @"globalAlpha";
+static NSString *const kATStateGlobalCompositeOperation = @"globalCompositeOperation";
+//shadows
+static NSString *const kATStateShadowOffsetX = @"shadowOffsetX";
+static NSString *const kATStateShadowOffsetY = @"shadowOffsetY";
+static NSString *const kATStateShadowBlur    = @"shadowBlur";
+static NSString *const kATStateShadowColor   = @"shadowColor";
+//line caps / joins
+static NSString *const kATStateLineWidth      = @"lineWidth";
+static NSString *const kATStateLineCap        = @"lineCap";
+static NSString *const kATStateLineJoin       = @"lineJoin";
+static NSString *const kATStateMiterLimit     = @"miterLimit";
+static NSString *const kATStateLineDash       = @"lineDash";
+static NSString *const kATStateLineDashOffset = @"lineDashOffset";
+//text
+static NSString *const kATStateFont         = @"font";
+static NSString *const kATStateTextAlign    = @"textAlign";
+static NSString *const kATStateTextBaseline = @"textBaseline";
+
+//compositing
+static NSString *const kATGlobalCompositeOperationSourceAtop      = @"source-atop";
+static NSString *const kATGlobalCompositeOperationSourceIn        = @"source-in";
+static NSString *const kATGlobalCompositeOperationSourceOut       = @"source-out";
+static NSString *const kATGlobalCompositeOperationSourceOver      = @"source-over";
+static NSString *const kATGlobalCompositeOperationDestinationAtop = @"destination-atop";
+static NSString *const kATGlobalCompositeOperationDestinationIn   = @"destination-in";
+static NSString *const kATGlobalCompositeOperationDestinationOut  = @"destination-out";
+static NSString *const kATGlobalCompositeOperationDestinationOver = @"destination-over";
+static NSString *const kATGlobalCompositeOperationLighter         = @"lighter";
+static NSString *const kATGlobalCompositeOperationCopy            = @"copy";
+static NSString *const kATGlobalCompositeOperationXor             = @"xor";
+static NSString *const kATGlobalCompositeOperationMultiply        = @"multiply";
+static NSString *const kATGlobalCompositeOperationScreen          = @"screen";
+static NSString *const kATGlobalCompositeOperationOverlay         = @"overlay";
+static NSString *const kATGlobalCompositeOperationDarken          = @"darken";
+static NSString *const kATGlobalCompositeOperationLighten         = @"lighten";
+static NSString *const kATGlobalCompositeOperationColorDodge      = @"color-dodge";
+static NSString *const kATGlobalCompositeOperationColorBurn       = @"color-burn";
+static NSString *const kATGlobalCompositeOperationHardLight       = @"hard-light";
+static NSString *const kATGlobalCompositeOperationSoftLight       = @"soft-light";
+static NSString *const kATGlobalCompositeOperationDifference      = @"difference";
+static NSString *const kATGlobalCompositeOperationExclusion       = @"exclusion";
+static NSString *const kATGlobalCompositeOperationHue             = @"hue";
+static NSString *const kATGlobalCompositeOperationSaturation      = @"saturation";
+static NSString *const kATGlobalCompositeOperationColor           = @"color";
+static NSString *const kATGlobalCompositeOperationLuminosity      = @"luminosity";
+
+//lineCap
+static NSString *const kATLineCapButt   = @"butt";
+static NSString *const kATLineCapRound  = @"round";
+static NSString *const kATLineCapSquare = @"square";
+//lineJoin
+static NSString *const kATLineJoinRound = @"round";
+static NSString *const kATLineJoinBevel = @"bevel";
+static NSString *const kATLineJoinMiter = @"miter";
+//winding rule
+static NSString *const kATWindingRuleNonZero = @"nonzero";
+static NSString *const kATWindingRuleEvenOdd = @"evenodd";
+//font
+static NSString *const kATDefaultFont = @"10px sans-serif";
+static NSString *const kATFontSerif     = @"serif";
+static NSString *const kATFontSansSerif = @"sans-serif";
+static NSString *const kATFontMonospace = @"monospace";
+static NSString *const kATFontSerifFont     = @"Times";
+static NSString *const kATFontSansSerifFont = @"Helvetica";
+static NSString *const kATFontMonospaceFont = @"Courier";
+//textalign
+static NSString *const kATTextAlignStart  = @"start";
+static NSString *const kATTextAlignEnd    = @"end";
+static NSString *const kATTextAlignLeft   = @"left";
+static NSString *const kATTextAlignRight  = @"right";
+static NSString *const kATTextAlignCenter = @"center";
+//textbaseline
+static NSString *const kATTextBaselineTop         = @"top";
+static NSString *const kATTextBaselineHanging     = @"hanging";
+static NSString *const kATTextBaselineMiddle      = @"middle";
+static NSString *const kATTextBaselineAlphabetic  = @"alphabetic";
+static NSString *const kATTextBaselineIdeographic = @"ideographic";
+static NSString *const kATTextBaselineBottom      = @"bottom";
+
+//pattern repetition
+static NSString *const kATRepetitionRepeat = @"repeat";
+static NSString *const kATRepetitionRepeatX = @"repeat-x";
+static NSString *const kATRepetitionRepeatY = @"repeat-y";
+static NSString *const kATRepetitionNoRepeat = @"no-repeat";
+
+//TODO: ...
+#define AT_LU_DICT(dict)\
+    static NSDictionary *dict_;\
+    static dispatch_once_t once;\
+    dispatch_once(&once,^{\
+        dict_ = dict;\
+    });\
+    return dict_;
+
+@interface ATSketchPropertyValue : NSObject
++ (NSDictionary *) borderEnd;
++ (NSDictionary *) borderJoin;
++ (NSDictionary *) patternFillType;
++ (NSDictionary *) blendMode;
+@end
+
+@implementation ATSketchPropertyValue
++ (NSDictionary *) borderEnd{
+    AT_LU_DICT((@{
+                  kATLineCapButt: @0,
+                  kATLineCapRound: @1,
+                  kATLineCapSquare: @2
+                  }));
+}
++ (NSDictionary *) borderJoin{
+    AT_LU_DICT((@{
+                  kATLineJoinMiter: @0,
+                  kATLineJoinRound: @1,
+                  kATLineJoinBevel: @2
+                  }));
+}
++ (NSDictionary *) patternFillType{
+    AT_LU_DICT((@{
+                  kATRepetitionRepeat : @0,
+                  kATRepetitionNoRepeat: @1
+                  }));
+}
++ (NSDictionary *) blendMode{
+    AT_LU_DICT((@{
+                  kATGlobalCompositeOperationSourceOver : @0,
+                  kATGlobalCompositeOperationDarken: @1,
+                  kATGlobalCompositeOperationMultiply: @2,
+                  kATGlobalCompositeOperationColorBurn: @3,
+                  kATGlobalCompositeOperationLighten: @4,
+                  kATGlobalCompositeOperationScreen: @5,
+                  kATGlobalCompositeOperationColorDodge: @6,
+                  kATGlobalCompositeOperationOverlay: @7,
+                  kATGlobalCompositeOperationSoftLight: @8,
+                  kATGlobalCompositeOperationHardLight: @9,
+                  kATGlobalCompositeOperationDifference: @10,
+                  kATGlobalCompositeOperationExclusion: @11,
+                  kATGlobalCompositeOperationHue: @12,
+                  kATGlobalCompositeOperationSaturation: @13,
+                  kATGlobalCompositeOperationColor: @14,
+                  kATGlobalCompositeOperationLuminosity: @15,
+                  kATGlobalCompositeOperationSourceIn : @16,
+                  kATGlobalCompositeOperationSourceOut: @17,
+                  kATGlobalCompositeOperationSourceAtop: @18,
+                  kATGlobalCompositeOperationDestinationOver: @19,
+                  kATGlobalCompositeOperationDestinationIn: @20,
+                  kATGlobalCompositeOperationDestinationOut: @21,
+                  kATGlobalCompositeOperationDestinationAtop: @22
+                 }));
+}
+@end
+
 #pragma mark - ATStylePart
 
 @implementation ATStylePart
@@ -135,138 +296,6 @@
 
 
 #pragma mark - ATSketchContext2d
-
-//state
-static NSString *const kATStateGroup = @"group";
-//style, color
-static NSString *const kATStateFillStyle   = @"fillStyle";
-static NSString *const kATStateStrokeStyle = @"strokeStyle";
-static NSString *const kATStateTransform   = @"transform";
-//compositing
-static NSString *const kATStateGlobalAlpha = @"globalAlpha";
-static NSString *const kATStateGlobalCompositeOperation = @"globalCompositeOperation";
-//shadows
-static NSString *const kATStateShadowOffsetX = @"shadowOffsetX";
-static NSString *const kATStateShadowOffsetY = @"shadowOffsetY";
-static NSString *const kATStateShadowBlur    = @"shadowBlur";
-static NSString *const kATStateShadowColor   = @"shadowColor";
-//line caps / joins
-static NSString *const kATStateLineWidth      = @"lineWidth";
-static NSString *const kATStateLineCap        = @"lineCap";
-static NSString *const kATStateLineJoin       = @"lineJoin";
-static NSString *const kATStateMiterLimit     = @"miterLimit";
-static NSString *const kATStateLineDash       = @"lineDash";
-static NSString *const kATStateLineDashOffset = @"lineDashOffset";
-//text
-static NSString *const kATStateFont         = @"font";
-static NSString *const kATStateTextAlign    = @"textAlign";
-static NSString *const kATStateTextBaseline = @"textBaseline";
-
-//compositing
-static NSString *const kATGlobalCompositeOperationSourceAtop      = @"source-atop";
-static NSString *const kATGlobalCompositeOperationSourceIn        = @"source-in";
-static NSString *const kATGlobalCompositeOperationSourceOut       = @"source-out";
-static NSString *const kATGlobalCompositeOperationSourceOver      = @"source-over";
-static NSString *const kATGlobalCompositeOperationDestinationAtop = @"destination-atop";
-static NSString *const kATGlobalCompositeOperationDestinationIn   = @"destination-in";
-static NSString *const kATGlobalCompositeOperationDestinationOut  = @"destination-out";
-static NSString *const kATGlobalCompositeOperationDestinationOver = @"destination-over";
-static NSString *const kATGlobalCompositeOperationLighter         = @"lighter";
-static NSString *const kATGlobalCompositeOperationCopy            = @"copy";
-static NSString *const kATGlobalCompositeOperationXor             = @"xor";
-static NSString *const kATGlobalCompositeOperationMultiply        = @"multiply";
-static NSString *const kATGlobalCompositeOperationScreen          = @"screen";
-static NSString *const kATGlobalCompositeOperationOverlay         = @"overlay";
-static NSString *const kATGlobalCompositeOperationDarken          = @"darken";
-static NSString *const kATGlobalCompositeOperationLighten         = @"lighten";
-static NSString *const kATGlobalCompositeOperationColorDodge      = @"color-dodge";
-static NSString *const kATGlobalCompositeOperationColorBurn       = @"color-burn";
-static NSString *const kATGlobalCompositeOperationHardLight       = @"hard-light";
-static NSString *const kATGlobalCompositeOperationSoftLight       = @"soft-light";
-static NSString *const kATGlobalCompositeOperationDifference      = @"difference";
-static NSString *const kATGlobalCompositeOperationExclusion       = @"exclusion";
-static NSString *const kATGlobalCompositeOperationHue             = @"hue";
-static NSString *const kATGlobalCompositeOperationSaturation      = @"saturation";
-static NSString *const kATGlobalCompositeOperationColor           = @"color";
-static NSString *const kATGlobalCompositeOperationLuminosity      = @"luminosity";
-
-//lineCap
-static NSString *const kATLineCapButt   = @"butt";
-static NSString *const kATLineCapRound  = @"round";
-static NSString *const kATLineCapSquare = @"square";
-//lineJoin
-static NSString *const kATLineJoinRound = @"round";
-static NSString *const kATLineJoinBevel = @"bevel";
-static NSString *const kATLineJoinMiter = @"miter";
-//winding rule
-static NSString *const kATWindingRuleNonZero = @"nonzero";
-static NSString *const kATWindingRuleEvenOdd = @"evenodd";
-//font
-static NSString *const kATDefaultFont = @"10px sans-serif";
-static NSString *const kATFontSerif     = @"serif";
-static NSString *const kATFontSansSerif = @"sans-serif";
-static NSString *const kATFontMonospace = @"monospace";
-static NSString *const kATFontSerifFont     = @"Times";
-static NSString *const kATFontSansSerifFont = @"Helvetica";
-static NSString *const kATFontMonospaceFont = @"Courier";
-//textalign
-static NSString *const kATTextAlignStart  = @"start";
-static NSString *const kATTextAlignEnd    = @"end";
-static NSString *const kATTextAlignLeft   = @"left";
-static NSString *const kATTextAlignRight  = @"right";
-static NSString *const kATTextAlignCenter = @"center";
-//textbaseline
-static NSString *const kATTextBaselineTop         = @"top";
-static NSString *const kATTextBaselineHanging     = @"hanging";
-static NSString *const kATTextBaselineMiddle      = @"middle";
-static NSString *const kATTextBaselineAlphabetic  = @"alphabetic";
-static NSString *const kATTextBaselineIdeographic = @"ideographic";
-static NSString *const kATTextBaselineBottom      = @"bottom";
-
-//pattern repetition
-static NSString *const kATRepetitionRepeat = @"repeat";
-static NSString *const kATRepetitionRepeatX = @"repeat-x";
-static NSString *const kATRepetitionRepeatY = @"repeat-y";
-static NSString *const kATRepetitionNoRepeat = @"no-repeat";
-
-@interface ATSketchPropertyValue : NSObject
-+ (NSDictionary *) blendMode;
-@end
-
-@implementation ATSketchPropertyValue
-+ (NSDictionary *) blendMode{
-    static NSDictionary *dict;
-    static dispatch_once_t once;
-    dispatch_once(&once,^{
-        dict = @{
-                 kATGlobalCompositeOperationSourceOver : @0,
-                 kATGlobalCompositeOperationDarken: @1,
-                 kATGlobalCompositeOperationMultiply: @2,
-                 kATGlobalCompositeOperationColorBurn: @3,
-                 kATGlobalCompositeOperationLighten: @4,
-                 kATGlobalCompositeOperationScreen: @5,
-                 kATGlobalCompositeOperationColorDodge: @6,
-                 kATGlobalCompositeOperationOverlay: @7,
-                 kATGlobalCompositeOperationSoftLight: @8,
-                 kATGlobalCompositeOperationHardLight: @9,
-                 kATGlobalCompositeOperationDifference: @10,
-                 kATGlobalCompositeOperationExclusion: @11,
-                 kATGlobalCompositeOperationHue: @12,
-                 kATGlobalCompositeOperationSaturation: @13,
-                 kATGlobalCompositeOperationColor: @14,
-                 kATGlobalCompositeOperationLuminosity: @15,
-                 kATGlobalCompositeOperationSourceIn : @16,
-                 kATGlobalCompositeOperationSourceOut: @17,
-                 kATGlobalCompositeOperationSourceAtop: @18,
-                 kATGlobalCompositeOperationDestinationOver: @19,
-                 kATGlobalCompositeOperationDestinationIn: @20,
-                 kATGlobalCompositeOperationDestinationOut: @21,
-                 kATGlobalCompositeOperationDestinationAtop: @22
-                 };
-    });
-    return dict;
-}
-@end
 
 @implementation ATSketchContext2d
 
@@ -502,23 +531,24 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
 }
 
 - (ATCanvasPattern *) createPatternWithImage:(ATSketchImage *)image andRepetition:(NSString *)repetition{
+    //set image data
     ATCanvasPattern *pattern = [ATCanvasPattern new];
     [pattern setImage:image];
+    //set pattern fill type
+    NSDictionary *patternFillType = [ATSketchPropertyValue patternFillType];
     //repeat-x, repeat-y not supported by Sketch
-    NSString* repetition_ =
-        (!repetition ||
-         (![repetition isEqualToString:kATRepetitionRepeat] &&
-         ![repetition isEqualToString:kATRepetitionNoRepeat])) ?
-    [kATRepetitionRepeat copy] :
-    repetition;
-    [pattern setRepetition:repetition_];
+    if(![patternFillType objectForKey:repetition]){
+        ATCOScriptPrint(([NSString stringWithFormat:@"Unsupported repitition \"%@\"",repetition]));
+        repetition = kATRepetitionRepeat;
+    }
+    [pattern setRepetition:[repetition copy]];
     return pattern;
 }
 
 #pragma mark - Compositing
 
 - (void) setGlobalAlpha:(CGFloat)alpha{
-    [self setStatePropertyWithKey:kATStateGlobalAlpha value:[NSNumber numberWithFloat:alpha]];
+    [self setStatePropertyWithKey:kATStateGlobalAlpha value:[NSNumber numberWithFloat:fmaxf(alpha, 0.0)]];
 }
 
 - (CGFloat) globalAlpha{
@@ -533,9 +563,9 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
 - (void) setGlobalCompositeOperation:(NSString *)operation{
     NSDictionary *blendMode = [ATSketchPropertyValue blendMode];
     if(![blendMode objectForKey:operation]){
-        NSString *msg = [NSString stringWithFormat:@"Unsupported globalCompositeOperation \"%@\"", operation];
-        ATCOScriptPrint(msg);
-        return;
+        ATCOScriptPrint(([NSString stringWithFormat:@"Unsupported globalCompositeOperation \"%@\"", operation]));
+        //fallback "source-over"
+        operation = kATGlobalCompositeOperationSourceOver;
     }
     [self setStatePropertyWithKey:kATStateGlobalCompositeOperation value:[operation copy]];
 }
@@ -603,7 +633,13 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
 }
 
 - (void) setLineCap:(NSString*)lineCap{
-    [self setStatePropertyWithKey:kATStateLineCap value:lineCap ? [lineCap copy] : [kATLineCapButt copy]];
+    NSDictionary *borderEnd = [ATSketchPropertyValue borderEnd];
+    if(![borderEnd objectForKey:lineCap]){
+        ATCOScriptPrint(([NSString stringWithFormat:@"Unsupported lineCap \"%@\"",lineCap]));
+        //fallback to default "butt"
+        lineCap = kATLineCapButt;
+    }
+    [self setStatePropertyWithKey:kATStateLineCap value:[lineCap copy]];
 }
 
 - (NSString*) lineCap{
@@ -611,7 +647,13 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
 }
 
 - (void) setLineJoin:(NSString *)lineJoin{
-    [self setStatePropertyWithKey:kATStateLineJoin value:lineJoin ? [lineJoin copy] : [kATLineJoinMiter copy]];
+    NSDictionary *borderJoin = [ATSketchPropertyValue borderJoin];
+    if(![borderJoin objectForKey:lineJoin]){
+        ATCOScriptPrint(([NSString stringWithFormat:@"Unsupported lineJoin \"%@\"",lineJoin]));
+        //fallback to default "miter"
+        lineJoin = kATLineJoinMiter;
+    }
+    [self setStatePropertyWithKey:kATStateLineJoin value:[lineJoin copy]];
 }
 
 - (NSString *) lineJoin{
@@ -762,7 +804,8 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
                 MSStyleFill *fill = [style addStylePartOfType:0];
                 [fill setFillType:4];
                 [fill setImage:[[pattern image] imageData]];
-                [fill setPatternFillType: [[pattern repetition] isEqualToString:kATRepetitionRepeat] ? 0 : 1];
+                NSDictionary *patternFillType = [ATSketchPropertyValue patternFillType];
+                [fill setPatternFillType: [patternFillType[[pattern repetition]] longLongValue]];
                 [outlinePath setStyle:style];
                 //add new outline path, keep reference path
                 [_target addLayers:@[outlinePath]];
@@ -794,7 +837,8 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
             [ref setFillType:4];
             ATCanvasPattern *pattern = value;
             [ref setImage:[[pattern image] imageData]];
-            [ref setPatternFillType: [[pattern repetition] isEqualToString:kATRepetitionRepeat] ? 0 : 1];
+            NSDictionary *patternFillType = [ATSketchPropertyValue patternFillType];
+            [ref setPatternFillType: [patternFillType[[pattern repetition]] longLongValue]];
         }
         
         unsigned long long windingRule = [_pathWindingRule isEqualToString:kATWindingRuleNonZero] ? 0 : 1;
