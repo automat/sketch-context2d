@@ -35,7 +35,9 @@ JSExportAs(addColorStop,
 @end
 
 #pragma mark – ATCanvasPattern
-@interface ATCanvasPattern : NSObject
+@interface ATCanvasPattern : NSObject<NSCopying>
+@property (nonatomic) ATSketchImage *image;
+@property (nonatomic) NSString *repetition;
 @end
 
 #pragma mark - ATTextMetrics
