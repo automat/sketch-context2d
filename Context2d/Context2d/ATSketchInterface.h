@@ -122,7 +122,6 @@
 @interface MSGradientStop
 @property(retain, nonatomic) MSColor *color;
 @property(nonatomic) double position;
-+ (id)stopWithPosition:(double)arg1 color:(id)arg2;
 @end
 
 #define MSGradient_Class NSClassFromString(@"MSGradient")
@@ -132,7 +131,8 @@
 @property(nonatomic) struct CGPoint from;
 @property(nonatomic) double elipseLength;
 @property(retain, nonatomic) MSArray *stops;
-- (id) stopAtIndex:(unsigned long long)arg1;
+- (unsigned long long)addStopAtLength:(double)arg1;
+- (void)setColor:(id)arg1 atIndex:(unsigned long long)arg2;
 - (id) initBlankGradient;
 @end
 
