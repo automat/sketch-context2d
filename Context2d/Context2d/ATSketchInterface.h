@@ -91,6 +91,9 @@
 @property(nonatomic) unsigned long long windingRule;
 @property(readonly, nonatomic) struct CGRect bounds;
 + (id) shapeWithBezierPath:(NSBezierPath *) path;
+- (id)outlinePathForPath:(id)arg1 withBorder:(id)arg2;
+- (id)outlineShapeWithBorder:(id)arg1;
+- (BOOL)canConvertToOutlines;
 - (void) setStyle:(id)style;
 @end
 
