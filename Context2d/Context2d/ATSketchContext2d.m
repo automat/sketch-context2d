@@ -189,8 +189,7 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
 - (instancetype) init{
     self = [super init];
     if(self){
-        _numColorStops = 0;
-        _msgradient    = [MSGradient_Class new];
+        _msgradient = [[MSGradient_Class alloc] initBlankGradient];
     }
     return self;
 }
@@ -199,25 +198,17 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
     if([_msgradient gradientType] == 1){
         offset = 1.0 - offset;
     }
-    
-    MSColor *color_ = [MSColor_Class colorWithSVGString:color];
-    if(_numColorStops++ < 2){
-        MSGradientStop* stop = [_msgradient stopAtIndex:(_numColorStops-1)];
-        [stop setPosition:offset];
-        [stop setColor:color_];
-        return;
-    }
-    [[_msgradient stops] addObject:[MSGradientStop_Class stopWithPosition:offset color:color_]];
+    unsigned long index = [_msgradient addStopAtLength:offset];
+    [_msgradient setColor:[MSColor_Class colorWithSVGString:color] atIndex:index];
 }
 
 - (void) setMsgradient:(MSGradient *)msgradient{
-    _numColorStops = [[msgradient stops] count];
-    _msgradient    = [msgradient copy];
+    _msgradient = [msgradient copy];
 }
 
 - (instancetype) copyWithZone:(NSZone *)zone{
     ATCanvasGradient *copy = [ATCanvasGradient new];
-    copy->_msgradient = self->_msgradient;
+    [copy setMsgradient: _msgradient];
     return copy;
 }
 @end
@@ -522,10 +513,9 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
     ATCanvasGradient *gradient = [ATCanvasGradient new];
     MSGradient *msgradient = [gradient msgradient];
     [msgradient setGradientType:1];
-    
-    //linear gradient from
-    [msgradient setFrom:CGPointMake(x0, y0 + fabs(r1 - r0))];
-    [msgradient setTo:CGPointMake(x1, y1)];
+    //only linear gradient
+    [msgradient setFrom:CGPointMake(x0, y0)];
+    [msgradient setTo:CGPointMake(x0 + r0, y0)];
     [msgradient setElipseLength:1.0];
     return gradient;
 }

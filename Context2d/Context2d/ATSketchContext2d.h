@@ -28,9 +28,7 @@ JSExportAs(addColorStop,
 );
 @end
 
-@interface ATCanvasGradient : NSObject<NSCopying,ATCanvasGradientExports>{
-    unsigned long long _numColorStops;
-}
+@interface ATCanvasGradient : NSObject<NSCopying,ATCanvasGradientExports>
 @property (nonatomic) MSGradient *msgradient;
 @end
 
