@@ -212,6 +212,21 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
     _msgradient = [msgradient copy];
 }
 
+- (MSGradient *) msgradientScaledToSize:(CGSize)size{
+    MSGradient *scaled = [_msgradient copy];
+    
+    CGPoint from = [_msgradient from];
+    CGPoint to   = [_msgradient to];
+    
+    CGPoint fromNew = CGPointMake(from.x / size.width, from.y / size.height);
+    CGPoint toNew   = CGPointMake(to.x / size.width, to.y / size.height);
+    
+    [scaled setFrom:fromNew];
+    [scaled setTo:toNew];
+    
+    return scaled;
+}
+
 - (instancetype) copyWithZone:(NSZone *)zone{
     ATCanvasGradient *copy = [ATCanvasGradient new];
     [copy setMsgradient: _msgradient];
@@ -765,8 +780,7 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
             
         //stroke - gradient
         } else if([value isKindOfClass:[ATCanvasGradient class]]){
-            MSGradient *gradient = [self gradientScaled:[value msgradient] bySize:[_layer bounds].size];
-            [ref setGradient:gradient];
+            [ref setGradient:[value msgradientScaledToSize:[_layer bounds].size]];
             [ref setFillType:1];
         }
         
@@ -833,8 +847,7 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
         //fill – gradient
         } else if([value isKindOfClass:[ATCanvasGradient class]]){
             [ref setFillType:1];
-            MSGradient *gradient = [self gradientScaled:[value msgradient] bySize:[_layer bounds].size];
-            [ref setGradient:gradient];
+            [ref setGradient:[value msgradientScaledToSize:[_layer bounds].size]];
             
         //fill – pattern
         } else if([value isKindOfClass:[ATCanvasPattern class]]){
@@ -873,21 +886,6 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
     _layerActive = _layer;
     [self updateGroupBounds];
     _pathPaintCount++;
-}
-
-- (MSGradient *) gradientScaled:(MSGradient *)gradient bySize:(CGSize)size{
-    MSGradient *scaled = [gradient copy];
-    
-    CGPoint from = [gradient from];
-    CGPoint to   = [gradient to];
-    
-    CGPoint fromNew = CGPointMake(from.x / size.width, from.y / size.height);
-    CGPoint toNew   = CGPointMake(to.x / size.width, to.y / size.height);
-    
-    [scaled setFrom:fromNew];
-    [scaled setTo:toNew];
-    
-    return scaled;
 }
 
 - (void) markPathChanged{
