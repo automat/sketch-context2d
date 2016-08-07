@@ -486,9 +486,18 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
 
 #pragma mark - Colors and Styles
 
+- (BOOL)isValidStyleValue:(id)value{
+    return [value isKindOfClass:[NSString class]] ||
+           [value isKindOfClass:[ATCanvasGradient class]] ||
+           [value isKindOfClass:[ATCanvasPattern class]];
+}
+
 - (void) setStrokeStyle:(id)strokeStyle{
+    if(![self isValidStyleValue:strokeStyle]){
+        strokeStyle = [ATSketchContext2d defaultState][kATStateStrokeStyle];
+    }
     [self setStatePropertyWithKey:kATStateStrokeStyle
-                            value:strokeStyle ? [strokeStyle copy] : @"000000"
+                            value:[strokeStyle copy]
                         stylePart:_stylePartStroke];
 }
 
@@ -497,9 +506,10 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
 }
 
 - (void) setFillStyle: (id)fillStyle{
-    [self setStatePropertyWithKey:kATStateFillStyle
-                            value:fillStyle ? [fillStyle copy] : @"000000"
-                        stylePart:_stylePartFill];
+    if(![self isValidStyleValue:fillStyle]){
+        fillStyle = [ATSketchContext2d defaultState][kATStateFillStyle];
+    }
+    [self setStatePropertyWithKey:kATStateFillStyle value:[fillStyle copy] stylePart:_stylePartFill];
 }
 
 - (id) fillStyle{
@@ -1062,9 +1072,9 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
     
     strFamily = tokens[1];
     strFamily = [strFamily isEqualToString:kATFontSansSerif] ? kATFontSansSerifFont :
-    [strFamily isEqualToString:kATFontSerif]     ? kATFontSerifFont :
-    [strFamily isEqualToString:kATFontMonospace] ? kATFontMonospaceFont :
-    strFamily;
+                [strFamily isEqualToString:kATFontSerif]     ? kATFontSerifFont :
+                [strFamily isEqualToString:kATFontMonospace] ? kATFontMonospaceFont :
+                strFamily;
     
     _font = [NSFont fontWithName:strFamily size:size];
     _fontMetrics = [ATFontMetrics metricsWithFont:_font];
