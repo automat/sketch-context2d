@@ -29,7 +29,7 @@ JSExportAs(addColorStop,
 @end
 
 @interface ATCanvasGradient : NSObject<NSCopying,ATCanvasGradientExports>
-@property (nonatomic) MSGradient *msgradient;
+@property (nonatomic,readonly) MSGradient *msgradient;
 - (MSGradient *) msgradientScaledToSize:(CGSize)size;
 @end
 

@@ -208,10 +208,6 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
     [_msgradient setColor:[MSColor_Class colorWithSVGString:color] atIndex:index];
 }
 
-- (void) setMsgradient:(MSGradient *)msgradient{
-    _msgradient = [msgradient copy];
-}
-
 - (MSGradient *) msgradientScaledToSize:(CGSize)size{
     MSGradient *scaled = [_msgradient copy];
     
@@ -229,7 +225,7 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
 
 - (instancetype) copyWithZone:(NSZone *)zone{
     ATCanvasGradient *copy = [ATCanvasGradient new];
-    [copy setMsgradient: _msgradient];
+    copy->_msgradient = [_msgradient copy];
     return copy;
 }
 @end
