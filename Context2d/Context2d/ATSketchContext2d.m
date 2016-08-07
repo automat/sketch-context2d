@@ -149,6 +149,12 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
                   kATRepetitionNoRepeat: @1
                   }));
 }
++ (NSDictionary *) windingRule{
+    AT_LU_DICT((@{
+                  kATWindingRuleNonZero : @0,
+                  kATWindingRuleEvenOdd : @1
+                  }));
+}
 + (NSDictionary *) blendMode{
     AT_LU_DICT((@{
                   kATGlobalCompositeOperationSourceOver : @0,
@@ -723,11 +729,10 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
         [self resetLayerAndStyle];
     }
     
-    //transform
-    NSAffineTransform *transform = _state[kATStateTransform];
-    if(transform){
-        [_path transformUsingAffineTransform: transform];
-    }
+    //transform path
+    [_path transformUsingAffineTransform: _state[kATStateTransform]];
+    
+    //create layer
     if(!_layer){
         _layer = [MSShapeGroup_Class shapeWithBezierPath:_path];
         [_layer setStyle:_style];
@@ -735,44 +740,38 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
     }
     //TODO: Move to partial updates, not reinitializations
     
-    // update stroke
+    //stroke – update
     if(stroke && _stylePartStroke.valid){
-        id value = _state[kATStateStrokeStyle];
+         id value = _state[kATStateStrokeStyle];
+        
+        //create style part stroke
         id ref = _stylePartStroke.ref = (!_stylePartStroke.ref || _pathPaintCount > 0) ?
-        [_style addStylePartOfType:1] :
-        _stylePartStroke.ref;
+                                        [_style addStylePartOfType:1] :
+                                        _stylePartStroke.ref;
+        //stroke – color
         if([value isKindOfClass:[NSString class]]){
             [ref setColor: [self colorWithSVGStringWithGlobalAlpha:value]];
             [ref setFillType:0];
             
+        //stroke - gradient
         } else if([value isKindOfClass:[ATCanvasGradient class]]){
             MSGradient *gradient = [self gradientScaled:[value msgradient] bySize:[_layer bounds].size];
             [ref setGradient:gradient];
             [ref setFillType:1];
         }
         
+        //thickness
         [ref setThickness:[_state[kATStateLineWidth] floatValue]];
-        
-        //update border options
+
+        //linecap / lineJoin
+        NSDictionary *borderEnd = [ATSketchPropertyValue borderEnd];
+        NSDictionary *borderJoin = [ATSketchPropertyValue borderJoin];
         MSStyleBorderOptions *options = [_style borderOptions];
+        [options setLineCapStyle:[borderEnd[_state[kATStateLineCap]] unsignedLongLongValue]];
+        [options setLineJoinStyle:[borderJoin[_state[kATStateLineJoin]] unsignedLongLongValue]];
         
-        //lineCap
-        NSString *lineCap  = _state[kATStateLineCap];
-        unsigned long long lineCapStyle = [lineCap isEqualToString:kATLineCapRound]  ? 1 :
-        [lineCap isEqualToString:kATLineCapSquare] ? 2 :
-        0; //default: butt
-        [options setLineCapStyle:lineCapStyle];
-        
-        //lineJoin
-        NSString *lineJoin = _state[kATStateLineJoin];
-        unsigned long long lineJoinStyle = [lineJoin isEqualToString:kATLineJoinRound] ? 1 :
-        [lineJoin isEqualToString:kATLineJoinBevel] ? 2 :
-        0; //default: miter
-        [options setLineJoinStyle:lineJoinStyle];
-        
-        //lineDash
+        //lineDash – restrict to 4 entries, max support sketch
         NSArray *lineDash = [_state[kATStateLineDash] copy];
-        //restrict to sketch just supporting 4 entries
         if(lineDash && [lineDash count] > 4){
             //...
             NSMutableArray *temp = [NSMutableArray arrayWithCapacity:4];
@@ -783,6 +782,7 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
         }
         [options setDashPattern:lineDash];
         
+        //stroke – pattern
         if([value isKindOfClass:[ATCanvasPattern class]]){
             //valid outline
             if([_layer canConvertToOutlines]){
@@ -806,23 +806,27 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
         }
     }
     
-    // update fill
+    //fill – update
     if(fill && _stylePartFill.valid){
         id value = _state[kATStateFillStyle];
-        MSStyleFill* ref = _stylePartFill.ref = (!_stylePartFill.ref || _pathPaintCount > 0) ?
-        [_style addStylePartOfType:0] :
-        _stylePartFill.ref;
         
-        //color string
+        //create style part fill
+        MSStyleFill* ref = _stylePartFill.ref = (!_stylePartFill.ref || _pathPaintCount > 0) ?
+                                                [_style addStylePartOfType:0] :
+                                                _stylePartFill.ref;
+        
+        //fill – color
         if([value isKindOfClass:[NSString class]]){
             [ref setFillType:0];
             [ref setColor: [self colorWithSVGStringWithGlobalAlpha:value]];
-        //gradient
+            
+        //fill – gradient
         } else if([value isKindOfClass:[ATCanvasGradient class]]){
             [ref setFillType:1];
             MSGradient *gradient = [self gradientScaled:[value msgradient] bySize:[_layer bounds].size];
             [ref setGradient:gradient];
-        //pattern
+            
+        //fill – pattern
         } else if([value isKindOfClass:[ATCanvasPattern class]]){
             [ref setFillType:4];
             ATCanvasPattern *pattern = value;
@@ -831,14 +835,15 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
             [ref setPatternFillType: [patternFillType[[pattern repetition]] longLongValue]];
         }
         
-        unsigned long long windingRule = [_pathWindingRule isEqualToString:kATWindingRuleNonZero] ? 0 : 1;
-        
+        //winding rule
+        NSDictionary *pathWindingRule = [ATSketchPropertyValue windingRule];
+        unsigned long long windingRule = [pathWindingRule[_pathWindingRule] unsignedLongLongValue];
         if ([_layer windingRule] != windingRule) {
             [_layer setWindingRule:windingRule];
         }
     }
     
-    //update shadow
+    //shadow – update
     if(shadow){
         CGFloat offsetX = [_state[kATStateShadowOffsetX] floatValue];
         CGFloat offsetY = [_state[kATStateShadowOffsetY] floatValue];
@@ -846,8 +851,8 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
         
         if(offsetX != 0.0 || offsetY != 0.0 || blur != 0.0){
             id ref = _stylePartShadow.ref = _stylePartShadow.ref ?
-            _stylePartShadow.ref :
-            [_style addStylePartOfType:2];
+                                            _stylePartShadow.ref :
+                                            [_style addStylePartOfType:2];
             [ref setColor: [self colorWithSVGStringWithGlobalAlpha:_state[kATStateShadowColor]]];
             [ref setOffsetX:offsetX];
             [ref setOffsetY:offsetY];
@@ -1003,9 +1008,11 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
     if(!_path){
         return;
     }
-    _pathWindingRule = ![rule isEqualToString:kATWindingRuleNonZero] && ![rule isEqualToString:kATWindingRuleEvenOdd] ?
-    kATWindingRuleNonZero :
-    rule;
+    NSDictionary *windingRule = [ATSketchPropertyValue windingRule];
+    if(![windingRule objectForKey:rule]){
+        rule = kATWindingRuleNonZero;
+    }
+    _pathWindingRule = rule;
     [self addPathWithStylePartStroke:NO fill:YES shadow:YES];
 }
 
