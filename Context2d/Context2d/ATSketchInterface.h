@@ -29,6 +29,10 @@
 - (unsigned long long)count;
 @end
 
+@interface MSImmutableModelObject
+- (id)newMutableCounterpart;
+@end
+
 @interface MSRect
 @property(nonatomic) struct CGPoint origin;
 @property(nonatomic) double width;
@@ -112,7 +116,12 @@
 @interface MSColor
 @property(readonly, nonatomic) double alpha;
 - (void) setAlpha:(double)alpha;
-+ (id) colorWithSVGString:(NSString*)string;
+@end
+
+#define MSImmutableColor_Class NSClassFromString(@"MSImmutableColor")
+@interface MSImmutableColor : MSImmutableModelObject
+@property(readonly, nonatomic) double alpha;
++ (id)colorWithSVGString:(id)arg1;
 @end
 
 @class MSImmutableGradientStop;
