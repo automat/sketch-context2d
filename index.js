@@ -55,8 +55,9 @@ const COSCRIPT_DELEGATE_RUNNING = '[[COScript applicationOnPort:[NSString string
  * @param scriptSource
  * @param sourceMap
  * @param options
+ * @param callback
  */
-function runScript(scriptPath, scriptSource, sourceMap, options){
+function runScript(scriptPath, scriptSource, sourceMap, options, callback = noop){
     //fetch script name
     let name = path.basename(scriptPath);
     name = name.substr(0, name.indexOf('.'));
@@ -94,9 +95,11 @@ function runScript(scriptPath, scriptSource, sourceMap, options){
     //execute temp cocoascript
     exec(cmd, {maxBuffer: options.maxBuffer},(err, stdout, stderr)=>{
         if(err || stderr){
-            throw new Error(err || stderr);
+            callback(new Error(err || stderr),null);
+            return;
         }
         console.log(stdout);
+        callback(null,null);
     });
 }
 
@@ -108,10 +111,12 @@ function runScript(scriptPath, scriptSource, sourceMap, options){
  * Creates a sketch 2d context
  * @param files
  * @param options
+ * @param callback
  */
-function createSketchContext2d(files,options){
+function createSketchContext2d(files,options,callback = noop){
     if(!files || !files.length){
-        throw new Error('No entry files passed.');
+        callback(new Error('No entry files passed.'),null);
+        return;
     }
     options = validateOptions(options,DefaultConfig);
 
@@ -121,7 +126,8 @@ function createSketchContext2d(files,options){
         try{
             fs.accessSync(entry,fs.F_OK);
         } catch(e){
-            throw new Error('Invalid file path: ' + entry);
+            callback(new Error(`Invalid file path: ${entry}`),null);
+            return;
         }
     }
 
@@ -164,10 +170,12 @@ function createSketchContext2d(files,options){
                 scriptSource = scriptSource + 'main(__ATSketchCanvasInstance);';
                 sourceMap = sourceMap.split('\n')[0];
 
-                runScript(scriptPath, scriptSource, sourceMap, options);
+                runScript(scriptPath, scriptSource, sourceMap, options, callback);
                 result = '';
             })
-            .on('error',(err)=>{throw new Error(err);});
+            .on('error',(err)=>{
+                callback(err,null);
+            });
     }
     bundle();
 
