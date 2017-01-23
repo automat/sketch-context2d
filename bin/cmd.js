@@ -24,13 +24,21 @@ if(!argv._.length){
     return;
 }
 
+const create = require('../index.js');
 const file = path.resolve(argv._[0]);
-require('../index.js')([file],{
-    verbose      : !!argv['verbose'],
-    verboseLog   : !!argv['log-verbose'],
-    autoArtboard : !!argv['select-artboard'],
-    recreate     : !!argv['recreate'],
-    flatten      : !!argv['flatten'],
-    maxBuffer    : argv['max-buffer'],
-    watch        : !!argv['watch']
-});
+
+create(
+    [file],{
+        verbose      : !!argv['verbose'],
+        verboseLog   : !!argv['log-verbose'],
+        autoArtboard : !!argv['select-artboard'],
+        recreate     : !!argv['recreate'],
+        flatten      : !!argv['flatten'],
+        maxBuffer    : argv['max-buffer'],
+        watch        : !!argv['watch']
+    },(err)=>{
+        if(err){
+            throw err;
+        }
+    }
+);
