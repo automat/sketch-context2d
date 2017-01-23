@@ -205,7 +205,7 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
         offset = 1.0 - offset;
     }
     unsigned long index = [_msgradient addStopAtLength:offset];
-    [_msgradient setColor:[MSColor_Class colorWithSVGString:color] atIndex:index];
+    [_msgradient setColor: [[MSImmutableColor_Class colorWithSVGString:color] newMutableCounterpart] atIndex:index];
 }
 
 - (MSGradient *) msgradientScaledToSize:(CGSize)size{
@@ -719,7 +719,7 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
     NSNumber *stateGlobalAlpha = _state[kATStateGlobalAlpha];
     CGFloat globalAlpha = stateGlobalAlpha ? [stateGlobalAlpha floatValue] : 1.0;
     
-    MSColor *color = [MSColor_Class colorWithSVGString:value];
+    MSColor *color = [[MSImmutableColor_Class colorWithSVGString:value] newMutableCounterpart];
     [color setAlpha:([color alpha] * globalAlpha)];
     return color;
 }
@@ -1207,7 +1207,7 @@ static NSString *const kATRepetitionNoRepeat = @"no-repeat";
         [[textLayer frame] setY:origin.y];
         
         //transparent fill color
-        MSColor *color = [MSColor_Class colorWithSVGString:@"#ffffff"];
+        MSColor *color = [[MSImmutableColor_Class colorWithSVGString:@"#ffffff"] newMutableCounterpart];
         [color setAlpha:0.0];
         [textLayer setTextColor:color];
         
