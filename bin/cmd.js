@@ -28,7 +28,7 @@ const create = require('../index.js');
 const file = path.resolve(argv._[0]);
 
 create(
-    [file],{
+    file,{
         verbose      : !!argv['verbose'],
         verboseLog   : !!argv['log-verbose'],
         autoArtboard : !!argv['select-artboard'],
