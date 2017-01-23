@@ -43,21 +43,21 @@ const DefaultConfig = Object.freeze({
 });
 
 /*--------------------------------------------------------------------------------------------------------------------*/
-// Run Script
+// COScript
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 const COSCRIPT_DELEGATE_START = '[[COScript app:\\"Sketch\\"] delegate]';
 const COSCRIPT_DELEGATE_RUNNING = '[[COScript applicationOnPort:[NSString stringWithFormat:@\\"%@.JSTalk\\", @\\"com.bohemiancoding.sketch3\\"]] delegate]';
 
 /**
- * Runs ATSketchContext2d script
+ * Runs CO script
  * @param scriptPath
  * @param scriptSource
  * @param sourceMap
  * @param options
  * @param callback
  */
-function runScript(scriptPath, scriptSource, sourceMap, options, callback = noop){
+function runCOScript(scriptPath, scriptSource, sourceMap, options, callback = noop){
     //fetch script name
     let name = path.basename(scriptPath);
     name = name.substr(0, name.indexOf('.'));
@@ -109,57 +109,53 @@ function runScript(scriptPath, scriptSource, sourceMap, options, callback = noop
 
 /**
  * Creates a sketch 2d context
- * @param files
- * @param options
+ * @param filePath
+ * @param config
  * @param callback
  */
-function createSketchContext2d(files,options,callback = noop){
-    if(!files || !files.length){
-        callback(new Error('No entry files passed.'),null);
+function createSketchContext2d(filePath,config,callback = noop){
+    if(!filePath){
+        callback(new Error('No entry file passed.'),null);
         return;
     }
-    options = validateOptions(options,DefaultConfig);
 
-    //validate file paths
-    for(let i = 0; i < files.length; ++i){
-        let entry = files[i] = path.resolve(__dirname,files[i]);
-        try{
-            fs.accessSync(entry,fs.F_OK);
-        } catch(e){
-            callback(new Error(`Invalid file path: ${entry}`),null);
-            return;
+    try{
+        fs.accessSync(filePath,fs.F_OK);
+    } catch(e) {
+        callback(new Error(`Invalid file path: ${filePath}`),null);
+        return;
+    }
+
+    config = validateOptions(config,DefaultConfig);
+
+    const browserifi = browserify((()=>{
+        let _config = {
+            entries : [filePath],
+            debug : true,
+            standalone: 'main'
+        };
+        if(config.watch){
+            _config.cache = {};
+            _config.packageCache = {};
         }
-    }
+        return _config;
+    })());
 
-    //multiple files support will come, just use first atm
-    const scriptPath = files[0];
-
-    //gen sourcemaps, export as 'main'
-    const optionsbi = {
-        entries : [scriptPath],
-        debug : true,
-        standalone : 'main'
-    };
-
-    if(options.watch){
-        optionsbi.cache = {};
-        optionsbi.packageCache = {};
-    }
-
-    const browserifyi = browserify(optionsbi);
-
-    let result = '';
-    browserifyi
+    browserifi
         .transform(replace,{
-            replace:[{
-                from:'__dirnamePlugin',
-                to:`"${path.resolve(path.dirname(scriptPath))}"`}]
+            replace : [{
+                from : '__dirnamePlugin',
+                to : `"${path.resolve(path.dirname(filePath))}"`
+            }]
         })
         .transform(brfs);
 
     function bundle(){
-        browserifyi.bundle()
-            .on('data',(data)=>{result += data;})
+        let result = '';
+        browserifi.bundle()
+            .on('data',(data)=>{
+                result += data;
+            })
             .on('end',()=>{
                 const sourceMapIndex = result.indexOf('//# sourceMappingURL');
                 let sourceMap = result.substr(sourceMapIndex);
@@ -170,8 +166,7 @@ function createSketchContext2d(files,options,callback = noop){
                 scriptSource = scriptSource + 'main(__ATSketchCanvasInstance);';
                 sourceMap = sourceMap.split('\n')[0];
 
-                runScript(scriptPath, scriptSource, sourceMap, options, callback);
-                result = '';
+                runCOScript(filePath,scriptSource,sourceMap,config,callback);
             })
             .on('error',(err)=>{
                 callback(err,null);
@@ -179,8 +174,8 @@ function createSketchContext2d(files,options,callback = noop){
     }
     bundle();
 
-    if(options.watch){
-        browserifyi.plugin(watchify).on('update', bundle);
+    if(config.watch){
+        browserifi.plugin(watchify).on('update', bundle);
     }
 }
 
