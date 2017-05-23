@@ -6,6 +6,199 @@ if(!NSClassFromString('ATContext2dJS')){
 
 var SCRIPT_NAME = __scriptname__;
 
+function warn(msg){
+    print(msg);
+    document.showMessage_(msg);
+}
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+// Target Artboard + Group
+/*--------------------------------------------------------------------------------------------------------------------*/
+
+/**
+ * Returns the context artboard
+ * @return {null||{}}
+ */
+function getArtboard(){
+    var page = document.currentPage();
+    var artboard = page.currentArtboard();
+    var msg = null;
+
+    if(!artboard){
+        //select first artboard
+        if(__artboard_auto_select__){
+            var artboards = document.artboards();
+            if(artboards.count() > 0){
+                artboard = artboards[0];
+            } else if(!__autocreate__) {
+                msg = 'Document has no artboards.';
+            }
+        }
+        //create artboard
+        if(!artboard && __artboard_auto_create__){
+            artboard = MSArtboardGroup.new();
+            var frame = artboard.frame();
+            frame.setX_(0);
+            frame.setY_(0);
+            frame.setWidth_(800);
+            frame.setHeight_(600);
+            page.addLayers_([artboard]);
+        }
+    }
+
+    if(!artboard){
+        warn(msg || 'Document no artboard selected.');
+        return null;
+    }
+
+    return artboard;
+}
+
+/**
+ * Returns the context target
+ * @param artboard
+ * @return {null||{}}
+ */
+function getContextTarget(artboard){
+    var selection = context.selection;
+    var target = null;
+    var targetSize = [
+        artboard.frame().size().width,
+        artboard.frame().size().height
+    ];
+
+    if(selection.count() == 0){
+        target = artboard;
+    } else {
+        var front  = selection.firstObject();
+        if(front.class() == MSLayerGroup){
+            var size = front.frame().size();
+            if(size.width != 0 || size.height != 0){
+                targetSize[0] = size.width;
+                targetSize[1] = size.height;
+            }
+            target = front;
+        } else {
+            target = artboard;
+        }
+    }
+    
+    if(!target && document.artboards.count() > 0){
+        artboard = document.artboards().firstObject();
+        target = artboard;
+    }
+
+    if(!target){
+        warn('No target selected');
+        return null;
+    }
+
+    return {element: target, size: targetSize};
+}
+
+/**
+ * Returns the context target group
+ * @param target
+ * @return {{}}
+ */
+function getTargetGroup(target){
+    var group = null;
+    var index = -1;
+    var groups = [];
+
+    //retrieve layer groups with same script name
+    (function find(element){
+        var class_ = element.class();
+        if(class_ != MSArtboardGroup && class_ != MSLayerGroup){
+            return;
+        }
+        var name = element.name();
+        if(name.indexOf(SCRIPT_NAME) != -1){
+            if(name.indexOf('keep') == -1){
+                groups.push(element);
+            }
+        }
+        var layers = element.layers();
+        var length = layers.count();
+        for(var i = 0; i < length; ++i){
+            find(layers.objectAtIndex(i));
+        }
+    })(target.element);
+
+    //get last updated layer group index
+    if(groups.length > 0){
+        groups.sort(function(a, b){
+            var tokensA = a.name().split('_');
+            var tokensB = b.name().split('_');
+            var timestampA = tokensA[tokensA.length - 1];
+            var timestampB = tokensB[tokensB.length - 1];
+
+            return timestampA > timestampB ? -1 : 1;
+        });
+
+        group = groups[0];
+        index = target.element.indexOfLayer_(group);
+
+        if(!__recreate__){
+            target.element.removeLayer(group);
+        } else {
+            index++;
+        }
+    }
+
+    //create new script layer group
+    group = MSLayerGroup.new();
+    if(index == -1){
+        target.element.addLayers_([group]);
+    } else {
+        target.element.insertLayers_atIndex_([group],index);
+    }
+
+    //update timestamp file
+    group.setName_(SCRIPT_NAME + '_' + new Date().getTime());
+
+    return group;
+}
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+// Script execution
+/*--------------------------------------------------------------------------------------------------------------------*/
+
+/**
+ * Runs the script within an target layer group
+ * @param target
+ */
+function runScriptAtTarget(target){
+    var group = getTargetGroup(target);
+
+    var canvas = ATSketchCanvasTarget.new();
+    canvas.setGroup_(group);
+    canvas.setSize_(NSMakeSize(target.size[0],target.size[1]));
+
+    var timeBegin;
+    if(!!__verbose__){
+        var date = new Date();
+        timeBegin = date.getTime();
+        print('' + date);
+        print('Script start');
+    }
+
+    ATContext2dJS.setVerbose(!!__verboselog__);
+    ATContext2dJS.runScriptAtPath_withTarget(__dirname__ + '/plugin/plugin.js',canvas);
+
+    target.element.select_byExpandingSelection_(true,false);
+
+    if(!!__verbose__){
+        var duration = '' + (new Date(new Date().getTime() - timeBegin) / 1000);
+        duration = duration.substr(0,duration.indexOf('.') + 3);
+        print('Script end: ' + duration + 's');
+    }
+}
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+// Run
+/*--------------------------------------------------------------------------------------------------------------------*/
+
 //filter selection
 var document  = context.document;
 if(!document){
@@ -13,156 +206,170 @@ if(!document){
     return;
 }
 
-var page = document.currentPage();
-var artboard = page.currentArtboard();
-
+var artboard = getArtboard();
 if(!artboard){
-    var msg;
-    //select first artboard available
-    if(__autoartboard__){
-        var artboards = document.artboards();
-        for(var i = 0; i < artboards.count(); ++i){
-            artboard = artboards[i];
-        }
-        msg = 'Document has no artboards.'
-    }
-    //create artboard
-    if(__autocreate__){
-        artboard = MSArtboardGroup.new();
-        var frame = artboard.frame();
-        frame.setX_(0);
-        frame.setY_(0);
-        frame.setWidth_(800);
-        frame.setHeight_(600);
-        page.addLayers_([artboard]);
-    }
-
-    if(!artboard){
-        msg = msg || 'Document has no artboards.';
-        print(msg);
-        document.showMessage_(msg);
-        return;
-    }
-}
-
-var selection  = context.selection;
-var target     = null;
-var targetSize = [artboard.frame().size().width,artboard.frame().size().height];
-
-if(selection.count() == 0){
-    target = artboard;
-} else {
-    var first = selection.firstObject();
-    if(first.class() == MSLayerGroup){
-        var size = first.frame().size();
-        if(size.width != 0 || size.height != 0){
-            targetSize[0] = size.width;
-            targetSize[1] = size.height;
-        }
-        target = first;
-    } else {
-        target = artboard;
-    }
-}
-
-if(!target && document.artboards().count() > 0){
-    artboard = document.artboards().firstObject();
-    target   = artboard;
-}
-
-//check render target set
-if(!target){
-    var msg = 'No target selected';
-    document.showMessage_(msg);
-    print(msg);
     return;
 }
 
-//script render target group
-var group;
-var groupIndex = -1;
-
-//check if there is already a script group
-var contextGroups = [];
-
-function find(element){
-    var class_ = element.class();
-    if(class_ != MSArtboardGroup && class_ != MSLayerGroup){
-        return;
-    }
-    var name = element.name();
-    if(name.indexOf(SCRIPT_NAME) != -1){
-        if(name.indexOf('keep') == -1){
-            contextGroups.push(element);
-        }
-    }
-
-    var layers = element.layers();
-    var length = layers.count();
-    for(var i = 0; i < length; ++i){
-        find(layers.objectAtIndex(i));
-    }
+var target = getContextTarget(artboard);
+if(!target){
+    return;
 }
 
-find(target);
-
-if(contextGroups.length > 0){
-    contextGroups.sort(function(a, b){
-        var tokensA = a.name().split('_');
-        var tokensB = b.name().split('_');
-        var timestampA = tokensA[tokensA.length - 1];
-        var timestampB = tokensB[tokensB.length - 1];
-
-        return timestampA > timestampB ? -1 : 1;
-    });
-
-    group = contextGroups[0];
-    groupIndex = target.indexOfLayer_(group);
-
-    if(!__recreate__){
-        target.removeLayer(group);
-    } else {
-        groupIndex+=1;
-    }
-}
+runScriptAtTarget(target);
+//
+// var group = getTargetGroup(target);
 
 
-//create/override group
-group = MSLayerGroup.new();
-if(groupIndex == -1){
-    target.addLayers_([group]);
-} else {
-    target.insertLayers_atIndex_([group],groupIndex);
-}
 
-//update timestamp file
-group.setName_(SCRIPT_NAME + '_' + new Date().getTime());
 
-var time;
-if(!!__verbose__){
-    var date = new Date();
-    time = date.getTime();
-    print('' + date);
-    print('Script start');
-}
-
-//canvas group + initial size
-var canvasTarget = ATSketchCanvasTarget.new();
-canvasTarget.setGroup_(group);
-canvasTarget.setSize_(NSMakeSize(targetSize[0],targetSize[1]));
-
-//run script with context
-ATContext2dJS.setVerbose(!!__verboselog__);
-ATContext2dJS.runScriptAtPath_withTarget(__dirname__ + '/plugin/plugin.js',canvasTarget);
-
-if(__flatten__){
-}
-
-//keep target selection valid
-target.select_byExpandingSelection_(true,false);
-
-if(!!__verbose__){
-    var duration = '' + (new Date(new Date().getTime() - time) / 1000);
-    duration = duration.substr(0,duration.indexOf('.') + 3);
-    print('Script end: ' + duration + 's');
-}
+// if(!artboard){
+//     var msg;
+//     //select first artboard available
+//     if(__autoartboard__){
+//         var artboards = document.artboards();
+//         for(var i = 0; i < artboards.count(); ++i){
+//             artboard = artboards[i];
+//         }
+//         msg = 'Document has no artboards.'
+//     }
+//     //create artboard
+//     if(__autocreate__){
+//         artboard = MSArtboardGroup.new();
+//         var frame = artboard.frame();
+//         frame.setX_(0);
+//         frame.setY_(0);
+//         frame.setWidth_(800);
+//         frame.setHeight_(600);
+//         page.addLayers_([artboard]);
+//     }
+//
+//     if(!artboard){
+//         msg = msg || 'Document has no artboards.';
+//         print(msg);
+//         document.showMessage_(msg);
+//         return;
+//     }
+// }
+//
+// var selection  = context.selection;
+// var target     = null;
+// var targetSize = [artboard.frame().size().width,artboard.frame().size().height];
+//
+// if(selection.count() == 0){
+//     target = artboard;
+// } else {
+//     var first = selection.firstObject();
+//     if(first.class() == MSLayerGroup){
+//         var size = first.frame().size();
+//         if(size.width != 0 || size.height != 0){
+//             targetSize[0] = size.width;
+//             targetSize[1] = size.height;
+//         }
+//         target = first;
+//     } else {
+//         target = artboard;
+//     }
+// }
+//
+// if(!target && document.artboards().count() > 0){
+//     artboard = document.artboards().firstObject();
+//     target   = artboard;
+// }
+//
+// //check render target set
+// if(!target){
+//     var msg = 'No target selected';
+//     document.showMessage_(msg);
+//     print(msg);
+//     return;
+// }
+//
+// //script render target group
+// var group;
+// var groupIndex = -1;
+//
+// //check if there is already a script group
+// var contextGroups = [];
+//
+// function find(element){
+//     var class_ = element.class();
+//     if(class_ != MSArtboardGroup && class_ != MSLayerGroup){
+//         return;
+//     }
+//     var name = element.name();
+//     if(name.indexOf(SCRIPT_NAME) != -1){
+//         if(name.indexOf('keep') == -1){
+//             contextGroups.push(element);
+//         }
+//     }
+//
+//     var layers = element.layers();
+//     var length = layers.count();
+//     for(var i = 0; i < length; ++i){
+//         find(layers.objectAtIndex(i));
+//     }
+// }
+//
+// find(target);
+//
+// if(contextGroups.length > 0){
+//     contextGroups.sort(function(a, b){
+//         var tokensA = a.name().split('_');
+//         var tokensB = b.name().split('_');
+//         var timestampA = tokensA[tokensA.length - 1];
+//         var timestampB = tokensB[tokensB.length - 1];
+//
+//         return timestampA > timestampB ? -1 : 1;
+//     });
+//
+//     group = contextGroups[0];
+//     groupIndex = target.indexOfLayer_(group);
+//
+//     if(!__recreate__){
+//         target.removeLayer(group);
+//     } else {
+//         groupIndex+=1;
+//     }
+// }
+//
+//
+// //create/override group
+// group = MSLayerGroup.new();
+// if(groupIndex == -1){
+//     target.addLayers_([group]);
+// } else {
+//     target.insertLayers_atIndex_([group],groupIndex);
+// }
+//
+// //update timestamp file
+// group.setName_(SCRIPT_NAME + '_' + new Date().getTime());
+//
+// var time;
+// if(!!__verbose__){
+//     var date = new Date();
+//     time = date.getTime();
+//     print('' + date);
+//     print('Script start');
+// }
+//
+// //canvas group + initial size
+// var canvasTarget = ATSketchCanvasTarget.new();
+// canvasTarget.setGroup_(group);
+// canvasTarget.setSize_(NSMakeSize(targetSize[0],targetSize[1]));
+//
+// //run script with context
+// ATContext2dJS.setVerbose(!!__verboselog__);
+// ATContext2dJS.runScriptAtPath_withTarget(__dirname__ + '/plugin/plugin.js',canvasTarget);
+//
+// if(__flatten__){
+// }
+//
+// //keep target selection valid
+// target.select_byExpandingSelection_(true,false);
+//
+// if(!!__verbose__){
+//     var duration = '' + (new Date(new Date().getTime() - time) / 1000);
+//     duration = duration.substr(0,duration.indexOf('.') + 3);
+//     print('Script end: ' + duration + 's');
+// }
