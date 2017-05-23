@@ -4,7 +4,7 @@
 
 ![](./assets/cover-00.jpg)
 
-##Introduction
+## Introduction
 
 This isn't a plugin. It´s a **node.js module and command-line tool to run js modules via [browserify](https://github.com/substack/node-browserify) in Sketch**.
 
@@ -22,13 +22,13 @@ You shouldnt create visual-systems for data-representation in Sketch, verify the
 
 We find solutions by constantly switching between design and implementation. I think this process can be unified and happen in a shared environment, right within Sketch and using our own preferred code toolset.  
 
-###Some visual examples
+### Some visual examples
 
 ![](./assets/sample-plots.png)
 Out of context, some explorations using the same external data-set and a shared style. You can find the Sketch file and the js files for plotting the data [here](./examples/00-readme-plots/), the original data is located [here](./examples/00-readme-plots/data/data-activity-top-5.txt).
 
 
-###How does it work?
+### How does it work?
 
 ![](./assets/scheme.jpg)
 *sketch-context2d* takes your js files, browserifies them (handling your filesystem requests as well) and creates a new javascript-context right within Sketch with wrapped bindings to its layer drawing procedures.
@@ -59,7 +59,7 @@ This will create a new group within your currently selected artboard or group na
 ![](./assets/screencast-00.gif)
 A recorded example using the `--watch` option drawing the Sketch logo in code.
 
-##Installation
+## Installation
 
 Install node.js if necessary
 
@@ -73,7 +73,7 @@ Using [npm](https://www.npmjs.com/), do: (Not published yet)
 npm install -g sketch-context2d
 ```
 
-##Run
+## Run
 
 Select a target artboard or group within Sketch.
 
@@ -93,7 +93,7 @@ $ sketch-context2d file.js
 
 
 
-####Module API example
+#### Module API example
 
 ```
 //do something here
@@ -112,25 +112,25 @@ require('sketch-context2d')(['dir/file.js'],options);
 ```
 
 
-##API-Reference
+## API-Reference
 
-###CanvasRenderingContext2d References
+### CanvasRenderingContext2d References
 
 https://www.w3.org/TR/2dcontext/ 
 (best overview)
 https://developer.mozilla.org/en/docs/Web/API/CanvasRenderingContext2D  
 (more accessible, reference for single cmd tests [here](./test/CanvasRenderingContext2d-API))
 
-###API-Implementation Status
+### API-Implementation Status
 
 Around 70% is already done, mostly pixel based manipulations is missing. Everything not configurable by Sketch´s Interface is ignored (eg. miterLimit, lineDashOffset).  
 [Overview here](./test/CanvasRenderingContext2d-API/SUMMARY.md)
 
-###CanvasRenderingContext2d API Additions
+### CanvasRenderingContext2d API Additions
 
 Some additions necessary to the original API:
 
-####Global
+#### Global
 
 ```
 //check if you are in Sketch
@@ -139,7 +139,7 @@ if(sketch){
 }
 ```
 
-####Context
+#### Context
 
 ```
 //Default, text-layers created via fillText/strokeText get transformed 
@@ -152,7 +152,7 @@ ctx.useTextLayerShapes = true;
 ctx.useTextLayerShapes = false;
 ```
 
-####Images
+#### Images
 
 ```
 var image = new Image();
